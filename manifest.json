@@ -7,13 +7,13 @@
   "theme_color": "#1B365D",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3076/3076897.png",
-      "sizes": "192x192",
+      "src": "kedae_mattowa.png",
+      "sizes": "500x500",
       "type": "image/png"
     },
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3076/3076897.png",
-      "sizes": "512x512",
+      "src": "kedae_mattowa.png",
+      "sizes": "500x500",
       "type": "image/png"
     }
   ]
