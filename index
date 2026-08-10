@@ -1,0 +1,213 @@
+<!-- ... (Seluruh struktur HTML dan UI Anda dari jawaban sebelumnya tetap sama persis di sini) ... -->
+
+<script>
+    // ⚠️ PASTE URL API GOOGLE APPS SCRIPT ANDA DI SINI
+    const API_URL = "https://script.google.com/macros/s/AKfycbym3wcaaq8CQ7maMYEWXSv_pmNBT52bA7TwIzOo0FNDZSx54EysvFJOO5kgissOzSvFkw/exec";
+    
+    let currentUserRole = "";
+    let masterData = { bahanBaku: [], bahanPenolong: [], tenagaKerja: [], alat: [], overhead: [] };
+    let cacheHitung = {};
+    let deferredPrompt = null;
+
+    /* ==============================================================
+       FUNGSI PENGHUBUNG KE BACKEND (API FETCH)
+       ============================================================== */
+    async function fetchAPI(action, payload = {}) {
+        try {
+            // Kita menggunakan text/plain agar tidak terkena error CORS Preflight dari browser
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action: action, payload: payload })
+            });
+            const result = await response.json();
+            if (result.status === 'success') {
+                return result.data;
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            console.error("API Error:", error);
+            alert("Gagal terhubung ke database: " + error.message);
+            return null;
+        }
+    }
+
+    /* ==============================================================
+       MODIFIKASI CRUD DENGAN ASYNC / AWAIT
+       ============================================================== */
+    
+    async function prosesLogin() {
+        let u = document.getElementById('loginUser').value;
+        let p = document.getElementById('loginPass').value;
+        let remember = document.getElementById('rememberMe').checked;
+        
+        let btn = document.querySelector('#loginModal button');
+        btn.innerText = "Loading..."; btn.disabled = true;
+
+        let res = await fetchAPI('prosesLogin', { username: u, password: p });
+        
+        btn.innerText = "Masuk"; btn.disabled = false;
+
+        if(res && res.success) {
+            currentUserRole = res.role.toLowerCase();
+            document.getElementById('labelRoleUser').innerText = u + " (" + currentUserRole.toUpperCase() + ")";
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('appContent').classList.remove('hidden');
+
+            if(remember) { localStorage.setItem('hpp_user', u); localStorage.setItem('hpp_pass', p); } 
+            else { localStorage.removeItem('hpp_user'); localStorage.removeItem('hpp_pass'); }
+
+            if(currentUserRole !== 'admin' && currentUserRole !== 'owner') {
+                document.getElementById('boxStatusKunci').classList.add('hidden');
+                document.getElementById('tabBtnMaster').classList.add('hidden');
+            }
+            ambilMasterDanInisialisasi();
+        } else if(res) { 
+            alert(res.message); 
+        }
+    }
+
+    async function ambilMasterDanInisialisasi() {
+        let data = await fetchAPI('ambilSemuaMasterData');
+        if(data) {
+            masterData = data;
+            kosongkanForm(); tambahBarisBahanBaku(); tambahBarisBahanPenolong(); tambahBarisTenagaKerja(); tambahBarisAlat(); tambahBarisOverhead(); hitungOtomatis();
+            renderTabelMasterDataKategori();
+        }
+    }
+
+    async function simpanMasterManual(kategori) {
+        if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { alert('Akses ditolak!'); return; }
+
+        let payload = {};
+        // (Logika validasi input sama persis seperti sebelumnya)
+        if(kategori === 'bahanBaku') {
+            let id = document.getElementById('editMasterIdBB').value; let nama = document.getElementById('mNamaBB').value; let harga = document.getElementById('mHargaBB').value; let qty = document.getElementById('mQtyBB').value; let satuan = document.getElementById('mSatuanBB').value;
+            if(!nama || !harga) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, harga: harga, qty: qty, satuan: satuan };
+        } else if(kategori === 'bahanPenolong') {
+            let id = document.getElementById('editMasterIdBP').value; let nama = document.getElementById('mNamaBP').value; let harga = document.getElementById('mHargaBP').value; let qty = document.getElementById('mQtyBP').value; let satuan = document.getElementById('mSatuanBP').value;
+            if(!nama || !harga) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, harga: harga, qty: qty, satuan: satuan };
+        } else if(kategori === 'tenagaKerja') {
+            let id = document.getElementById('editMasterIdTK').value; let nama = document.getElementById('mNamaTK').value; let gaji = document.getElementById('mGajiTK').value; let jam = document.getElementById('mJamTK').value;
+            if(!nama || !gaji) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, gaji: gaji, jamHari: jam };
+        } else if(kategori === 'alat') {
+            let id = document.getElementById('editMasterIdAlat').value; let nama = document.getElementById('mNamaAlat').value; let harga = document.getElementById('mHargaAlat').value; let qty = document.getElementById('mQtyAlat').value; let residu = document.getElementById('mResiduAlat').value; let umur = document.getElementById('mUmurAlat').value;
+            if(!nama || !harga) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, harga: harga, qty: qty, residu: residu, umur: umur };
+        } else if(kategori === 'overhead') {
+            let id = document.getElementById('editMasterIdOH').value; let nama = document.getElementById('mNamaOH').value; let biaya = document.getElementById('mBiayaOH').value; let qty = document.getElementById('mQtyOH').value;
+            if(!nama || !biaya) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, biaya: biaya, qty: qty };
+        }
+
+        let res = await fetchAPI('simpanKeMaster', { kategori: kategori, obj: payload });
+        if(res && res.success) {
+            alert(res.message); resetFormMaster(kategori); ambilMasterDanInisialisasi();
+        }
+    }
+
+    async function kirimData() {
+        if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { alert('Akses Ditolak!'); return; }
+        let namaProduk = document.getElementById('namaProduk').value; let jumlahProduksi = document.getElementById('jumlahProduksi').value;
+        if(!namaProduk || !jumlahProduksi) { alert('Isi Nama Produk dan Jumlah Produksi!'); return; }
+
+        let rincianBB = []; document.querySelectorAll('.row-bb').forEach(r => { let nm=r.querySelector('.nama-bb').value; if(nm) rincianBB.push({ nama: nm, hargaBeli: r.querySelector('.harga-bb').value, sBeli: r.querySelector('.satuan-beli-bb').value, qty: r.querySelector('.qty-pakai-bb').value, sPakai: r.querySelector('.satuan-pakai-bb').value }); });
+        let rincianBP = []; document.querySelectorAll('.row-bp').forEach(r => { let nm=r.querySelector('.nama-bp').value; if(nm) rincianBP.push({ nama: nm, qty: r.querySelector('.qty-bp').value, harga: r.querySelector('.harga-bp').value }); });
+        let rincianTK = []; document.querySelectorAll('.row-tk').forEach(r => { let nm=r.querySelector('.nama-tk').value; if(nm) rincianTK.push({ nama: nm, gaji: r.querySelector('.gaji-tk').value, jamHari: r.querySelector('.jam-hari-tk').value, menitResep: r.querySelector('.menit-resep-tk').value }); });
+        let rincianAlat = []; document.querySelectorAll('.row-alat').forEach(r => { let nm=r.querySelector('.nama-alat').value; if(nm) rincianAlat.push({ nama: nm, harga: r.querySelector('.harga-alat').value, residu: r.querySelector('.residu-alat').value, umur: r.querySelector('.umur-alat').value }); });
+        let rincianOH = []; document.querySelectorAll('.row-oh').forEach(r => { let nm=r.querySelector('.nama-oh').value; if(nm) rincianOH.push({ nama: nm, biaya: r.querySelector('.biaya-oh').value, totBatchHarian: r.querySelector('.total-batch-harian').value, batchResep: r.querySelector('.batch-resep-oh').value }); });
+
+        let payloadData = {
+            id: document.getElementById('editResepId').value, namaProduk: namaProduk, jumlahProduksi: Number(jumlahProduksi), hppPerUnit: cacheHitung.hppPerUnit, hargaJualDasar: cacheHitung.hargaJualDasar,
+            targetMargin: Number(document.getElementById('targetMargin').value), visibilitasStaff: document.getElementById('visibilitasStaff').value,
+            rincianJSON: JSON.stringify({ bb: rincianBB, bp: rincianBP, tk: rincianTK, alat: rincianAlat, oh: rincianOH })
+        };
+
+        document.getElementById('btnSimpanDatabase').innerText = "Menyimpan...";
+        let res = await fetchAPI('simpanDanHitungData', payloadData);
+        document.getElementById('btnSimpanDatabase').innerText = "💾 Simpan / Update Data";
+        
+        if(res && res.success) { alert(res.message); gantiTab('daftar'); }
+    }
+
+    async function muatDaftarResep() {
+        let tbody = document.getElementById('tabelResepBody'); tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Memuat data...</td></tr>`;
+        let data = await fetchAPI('ambilDaftarResep', { userRole: currentUserRole });
+        
+        if(!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Belum ada resep tersimpan.</td></tr>`; return; }
+        
+        let html = '';
+        data.forEach(item => {
+            let st = item.visibilitasStaff === 'kunci' ? `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px]">🔒 Kunci</span>` : `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]">🔓 Buka</span>`;
+            html += `<tr class="border-b hover:bg-gray-50">
+                <td class="p-3 font-semibold text-primary">${item.namaProduk}</td>
+                <td class="p-3 font-bold text-blue-800">Rp ${Math.round(item.hppPerUnit).toLocaleString('id-ID')}</td>
+                <td class="p-3">${st}</td>
+                <td class="p-3 text-center space-x-1"><button onclick="bukaResepLengkap('${item.id}')" class="text-[10px] bg-blue-100 text-primary px-2 py-1 rounded font-bold">Lihat/Edit</button> ${currentUserRole === 'admin' || currentUserRole === 'owner' ? `<button onclick="hapusResep('${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button>` : ``}</td>
+                <td class="p-3 text-center space-x-1"><button onclick="unduhPDFDariList('${item.id}')" class="text-[10px] bg-red-600 text-white px-2 py-1 rounded font-bold">📄 PDF</button> <button onclick="unduhExcelDariList('${item.id}')" class="text-[10px] bg-green-600 text-white px-2 py-1 rounded font-bold">📊 Excel</button></td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+
+    async function bukaResepLengkap(id) {
+        let item = await fetchAPI('ambilDetailResepById', { id: id });
+        if(!item) { alert('Data resep tidak ditemukan!'); return; }
+        
+        gantiTab('form'); kosongkanForm();
+        document.getElementById('editResepId').value = item.id; document.getElementById('namaProduk').value = item.namaProduk; document.getElementById('jumlahProduksi').value = item.jumlahProduksi; document.getElementById('targetMargin').value = item.targetMargin; document.getElementById('visibilitasStaff').value = item.visibilitasStaff || 'buka';
+
+        let json = JSON.parse(item.rincianJSON || '{}');
+        // Render data ke form (Sama persis dengan logika render versi sebelumnya)
+        if(json.bb) { json.bb.forEach(b => { tambahBarisBahanBaku(); let rows = document.querySelectorAll('.row-bb'); let r = rows[rows.length - 1]; r.querySelector('.nama-bb').value = b.nama; r.querySelector('.nama-bb').disabled = false; r.querySelector('.harga-bb').value = b.hargaBeli; r.querySelector('.harga-bb').disabled = false; r.querySelector('.satuan-beli-bb').value = b.sBeli; r.querySelector('.satuan-beli-bb').disabled = false; r.querySelector('.qty-pakai-bb').value = b.qty; r.querySelector('.satuan-pakai-bb').value = b.sPakai; }); }
+        if(json.bp) { json.bp.forEach(b => { tambahBarisBahanPenolong(); let rows = document.querySelectorAll('.row-bp'); let r = rows[rows.length - 1]; r.querySelector('.nama-bp').value = b.nama; r.querySelector('.nama-bp').disabled = false; r.querySelector('.harga-bp').value = b.harga; r.querySelector('.harga-bp').disabled = false; r.querySelector('.qty-bp').value = b.qty; }); }
+        if(json.tk) { json.tk.forEach(t => { tambahBarisTenagaKerja(); let rows = document.querySelectorAll('.row-tk'); let r = rows[rows.length - 1]; r.querySelector('.nama-tk').value = t.nama; r.querySelector('.nama-tk').disabled = false; r.querySelector('.gaji-tk').value = t.gaji; r.querySelector('.gaji-tk').disabled = false; r.querySelector('.jam-hari-tk').value = t.jamHari; r.querySelector('.jam-hari-tk').disabled=false; r.querySelector('.menit-resep-tk').value = t.menitResep; }); }
+        if(json.alat) { json.alat.forEach(a => { tambahBarisAlat(); let rows = document.querySelectorAll('.row-alat'); let r = rows[rows.length - 1]; r.querySelector('.nama-alat').value = a.nama; r.querySelector('.nama-alat').disabled = false; r.querySelector('.harga-alat').value = a.harga; r.querySelector('.harga-alat').disabled = false; r.querySelector('.residu-alat').value = a.residu; r.querySelector('.residu-alat').disabled=false; r.querySelector('.umur-alat').value = a.umur; r.querySelector('.umur-alat').disabled=false; hitungSusutAlat(r.querySelector('.harga-alat')); }); }
+        if(json.oh) { json.oh.forEach(o => { tambahBarisOverhead(); let rows = document.querySelectorAll('.row-oh'); let r = rows[rows.length - 1]; r.querySelector('.nama-oh').value = o.nama; r.querySelector('.nama-oh').disabled = false; r.querySelector('.biaya-oh').value = o.biaya; r.querySelector('.biaya-oh').disabled = false; if(o.totBatchHarian) r.querySelector('.total-batch-harian').value = o.totBatchHarian; if(o.batchResep) r.querySelector('.batch-resep-oh').value = o.batchResep; }); }
+
+        if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { document.querySelectorAll('#sectionForm input, #sectionForm select').forEach(el => el.disabled = true); document.getElementById('btnSimpanDatabase').classList.add('hidden'); } else { document.getElementById('btnSimpanDatabase').classList.remove('hidden'); }
+        hitungOtomatis();
+    }
+
+    async function hapusResep(id) {
+        if(confirm('Hapus resep ini?')) { 
+            let res = await fetchAPI('hapusResep', { id: id, userRole: currentUserRole });
+            if(res && res.success) { alert(res.message); muatDaftarResep(); }
+        }
+    }
+
+    async function hapusMasterItem(kategori, id) {
+        if(confirm('Hapus item master data ini?')) { 
+            let res = await fetchAPI('hapusMasterItem', { kategori: kategori, id: id, userRole: currentUserRole });
+            if(res && res.success) { alert(res.message); ambilMasterDanInisialisasi(); }
+        }
+    }
+
+    // Fungsi fetch khusus untuk Download Background (Dari List)
+    async function unduhPDFDariList(id) {
+        alert('Mempersiapkan PDF... Mohon tunggu.');
+        let item = await fetchAPI('ambilDetailResepById', { id: id });
+        if(item) {
+            let dataExport = parseDataResepUntukExport(item);
+            let trRows = ''; dataExport.rincian.forEach(r => { trRows += `<tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 4px;">${r[0]}</td><td style="padding: 6px 4px;">${r[1]}</td><td style="padding: 6px 4px; text-align: center;">${r[2]} ${r[3]}</td></tr>`; });
+            let tpl = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;"><h1 style="color: #1B365D; border-bottom: 2px solid #1B365D; padding-bottom: 10px; margin-bottom: 20px;">Rincian HPP Resep</h1><table style="width: 100%; margin-bottom: 20px; font-size: 14px;"><tr><td style="font-weight: bold; width: 150px;">Nama Resep:</td><td>${dataExport.nama}</td></tr><tr><td style="font-weight: bold;">Jumlah Produksi:</td><td>${dataExport.batch} Porsi/Batch</td></tr><tr><td style="font-weight: bold;">HPP / Porsi:</td><td>Rp ${Math.round(dataExport.hpp).toLocaleString('id-ID')}</td></tr><tr><td style="font-weight: bold;">Harga Jual Dasar:</td><td>Rp ${Math.round(dataExport.hargaDasar).toLocaleString('id-ID')}</td></tr></table><h3 style="background-color: #EAEFF5; padding: 8px; font-size: 14px;">Breakdown Komposisi Item</h3><table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;"><tr style="background-color: #1B365D; color: white;"><th style="padding: 8px 4px; text-align: left;">Kategori</th><th style="padding: 8px 4px; text-align: left;">Nama Item</th><th style="padding: 8px 4px; text-align: center;">Kuantitas Pakai</th></tr>${trRows}</table><p style="margin-top: 40px; font-size: 10px; color: #888; text-align: center;">Dokumen HPP dicetak dari Sistem Internal.</p></div>`;
+            let opt = { margin: 0.5, filename: `HPP_${dataExport.nama.replace(/\s+/g,'_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+            let el = document.createElement('div'); el.innerHTML = tpl; html2pdf().set(opt).from(el).save();
+        }
+    }
+
+    async function unduhExcelDariList(id) {
+        alert('Mempersiapkan Excel... Mohon tunggu.');
+        let item = await fetchAPI('ambilDetailResepById', { id: id });
+        if(item) {
+            let dataExport = parseDataResepUntukExport(item);
+            let arr = [['INFORMASI RESEP'], ['Nama Resep', dataExport.nama], ['Jumlah Produksi', dataExport.batch + ' Porsi'], ['HPP / Unit', Math.round(dataExport.hpp)], ['Harga Jual Dasar', Math.round(dataExport.hargaDasar)], [], ['Kategori', 'Nama Item', 'Kuantitas Pakai', 'Satuan']];
+            dataExport.rincian.forEach(r => arr.push([r[0], r[1], r[2], r[3]]));
+            let ws = XLSX.utils.aoa_to_sheet(arr); let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Rincian HPP"); XLSX.writeFile(wb, `HPP_${dataExport.nama.replace(/\s+/g,'_')}.xlsx`);
+        }
+    }
+
+    // SEMUA FUNGSI UI BIASA TETAP ADA DI BAWAH INI SEPERTI:
+    // tambahBarisBahanBaku(), hitungOtomatis(), gantiTab(), dll...
+    // (Gunakan kode UI sebelumnya, tidak ada yang berubah untuk fungsi render HTML).
+</script>
