@@ -80,8 +80,8 @@
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Produk / Resep F&B</label>
-                        <input type="text" id="namaProduk" placeholder="Contoh: Es Cendol Dawet Ayu" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Produk / Resep</label>
+                        <input type="text" id="namaProduk" placeholder="Contoh: Es Teler" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Jumlah Hasil Produksi (Batch / Porsi)</label>
@@ -89,11 +89,65 @@
                     </div>
                 </div>
 
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="package" class="w-4 h-4"></i> 1. Bahan Baku Utama</h3><div id="containerBahanBaku" class="space-y-2"></div><button type="button" onclick="tambahBarisBahanBaku()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200 flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Bahan Baku</button></div>
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="tag" class="w-4 h-4"></i> 2. Bahan Penolong & Kemasan</h3><div id="containerBahanPenolong" class="space-y-2"></div><button type="button" onclick="tambahBarisBahanPenolong()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200 flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Bahan Penolong</button></div>
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4"></i> 3. Tenaga Kerja Langsung</h3><div id="containerTenagaKerja" class="space-y-2"></div><button type="button" onclick="tambahBarisTenagaKerja()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200 flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Tenaga Kerja</button></div>
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="settings" class="w-4 h-4"></i> 4. Penyusutan Alat</h3><div id="containerAlat" class="space-y-2"></div><button type="button" onclick="tambahBarisAlat()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200 flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Alat</button></div>
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="lightbulb" class="w-4 h-4"></i> 5. Biaya Overhead Usaha</h3><div id="containerOverhead" class="space-y-2"></div><button type="button" onclick="tambahBarisOverhead()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200 flex items-center gap-1"><i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Overhead</button></div>
+                <!-- 1. BAHAN BAKU UTAMA -->
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="package" class="w-4 h-4"></i> 1. Bahan Baku Utama</h3>
+                        <div class="space-x-1">
+                            <button type="button" onclick="tambahBarisBahanBaku('master')" class="text-xs bg-blue-100 text-primary font-semibold px-2.5 py-1.5 rounded-md hover:bg-blue-200 inline-flex items-center gap-1"><i data-lucide="database" class="w-3 h-3"></i> + Pilih Master</button>
+                            <button type="button" onclick="tambahBarisBahanBaku('manual')" class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1.5 rounded-md hover:bg-emerald-200 inline-flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i> + Input Manual</button>
+                        </div>
+                    </div>
+                    <div id="containerBahanBaku" class="space-y-2"></div>
+                </div>
+
+                <!-- 2. BAHAN PENOLONG & KEMASAN -->
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="tag" class="w-4 h-4"></i> 2. Bahan Penolong & Kemasan</h3>
+                        <div class="space-x-1">
+                            <button type="button" onclick="tambahBarisBahanPenolong('master')" class="text-xs bg-blue-100 text-primary font-semibold px-2.5 py-1.5 rounded-md hover:bg-blue-200 inline-flex items-center gap-1"><i data-lucide="database" class="w-3 h-3"></i> + Pilih Master</button>
+                            <button type="button" onclick="tambahBarisBahanPenolong('manual')" class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1.5 rounded-md hover:bg-emerald-200 inline-flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i> + Input Manual</button>
+                        </div>
+                    </div>
+                    <div id="containerBahanPenolong" class="space-y-2"></div>
+                </div>
+
+                <!-- 3. TENAGA KERJA LANGSUNG -->
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="users" class="w-4 h-4"></i> 3. Tenaga Kerja Langsung</h3>
+                        <div class="space-x-1">
+                            <button type="button" onclick="tambahBarisTenagaKerja('master')" class="text-xs bg-blue-100 text-primary font-semibold px-2.5 py-1.5 rounded-md hover:bg-blue-200 inline-flex items-center gap-1"><i data-lucide="database" class="w-3 h-3"></i> + Pilih Master</button>
+                            <button type="button" onclick="tambahBarisTenagaKerja('manual')" class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1.5 rounded-md hover:bg-emerald-200 inline-flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i> + Input Manual</button>
+                        </div>
+                    </div>
+                    <div id="containerTenagaKerja" class="space-y-2"></div>
+                </div>
+
+                <!-- 4. PENYUSUTAN ALAT -->
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="settings" class="w-4 h-4"></i> 4. Penyusutan Alat</h3>
+                        <div class="space-x-1">
+                            <button type="button" onclick="tambahBarisAlat('master')" class="text-xs bg-blue-100 text-primary font-semibold px-2.5 py-1.5 rounded-md hover:bg-blue-200 inline-flex items-center gap-1"><i data-lucide="database" class="w-3 h-3"></i> + Pilih Master</button>
+                            <button type="button" onclick="tambahBarisAlat('manual')" class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1.5 rounded-md hover:bg-emerald-200 inline-flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i> + Input Manual</button>
+                        </div>
+                    </div>
+                    <div id="containerAlat" class="space-y-2"></div>
+                </div>
+
+                <!-- 5. BIAYA OVERHEAD USAHA -->
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-primary text-sm flex items-center gap-1.5"><i data-lucide="lightbulb" class="w-4 h-4"></i> 5. Biaya Overhead Usaha</h3>
+                        <div class="space-x-1">
+                            <button type="button" onclick="tambahBarisOverhead('master')" class="text-xs bg-blue-100 text-primary font-semibold px-2.5 py-1.5 rounded-md hover:bg-blue-200 inline-flex items-center gap-1"><i data-lucide="database" class="w-3 h-3"></i> + Pilih Master</button>
+                            <button type="button" onclick="tambahBarisOverhead('manual')" class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1.5 rounded-md hover:bg-emerald-200 inline-flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i> + Input Manual</button>
+                        </div>
+                    </div>
+                    <div id="containerOverhead" class="space-y-2"></div>
+                </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
                     <div>
@@ -315,7 +369,6 @@
             document.getElementById('section' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
             document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "flex-1 py-3 px-4 text-center border-b-2 border-primary text-primary bg-white whitespace-nowrap flex items-center justify-center gap-1.5";
             
-            // Re-render Lucide icons for dynamically switched views
             lucide.createIcons();
 
             if(tab === 'daftar') muatDaftarResep(); 
@@ -364,7 +417,13 @@
             let data = await fetchAPI('ambilSemuaMasterData');
             if(data) {
                 masterData = data;
-                kosongkanForm(); tambahBarisBahanBaku(); tambahBarisBahanPenolong(); tambahBarisTenagaKerja(); tambahBarisAlat(); tambahBarisOverhead(); hitungOtomatis();
+                kosongkanForm(); 
+                tambahBarisBahanBaku('master'); 
+                tambahBarisBahanPenolong('master'); 
+                tambahBarisTenagaKerja('master'); 
+                tambahBarisAlat('master'); 
+                tambahBarisOverhead('master'); 
+                hitungOtomatis();
                 renderTabelMasterDataKategori();
             }
         }
@@ -375,81 +434,175 @@
             document.getElementById('containerTenagaKerja').innerHTML = ''; document.getElementById('containerAlat').innerHTML = ''; document.getElementById('containerOverhead').innerHTML = '';
         }
 
-        function tambahBarisBahanBaku() {
+        // --- PEMISAHAN FORM INPUT (MASTER VS MANUAL) ---
+
+        function tambahBarisBahanBaku(tipe = 'master') {
             let container = document.getElementById('containerBahanBaku');
             let div = document.createElement('div');
             div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bb bg-white p-2.5 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih Master --</option>`;
-            masterData.bahanBaku.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]} / ${item.data[3]||'kg'})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded font-semibold" onchange="pilihMasterBB(this)">${opsi}<option value="manual">+ Input Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bb" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bb" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><select class="w-full p-1 border rounded satuan-beli-bb" disabled><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex gap-1"><input type="number" placeholder="Pakai" class="w-1/2 p-1 border rounded qty-pakai-bb" oninput="hitungOtomatis()"><select class="w-1/2 p-1 border rounded satuan-pakai-bb" onchange="hitungOtomatis()"><option value="g">g</option><option value="ml">ml</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-bb">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            
+            if (tipe === 'master') {
+                let opsi = `<option value="">-- Pilih dari Master Bahan Baku --</option>`;
+                masterData.bahanBaku.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]} / ${item.data[3]||'kg'})</option>`; });
+                div.innerHTML = `
+                    <div class="sm:col-span-5"><select class="w-full p-1 border rounded font-semibold bg-blue-50/50" onchange="pilihMasterBB(this)">${opsi}</select></div>
+                    <div class="sm:col-span-3 hidden"><input type="text" class="w-full p-1 border rounded nama-bb"></div>
+                    <div class="sm:col-span-2 hidden"><input type="number" class="w-full p-1 border rounded harga-bb" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-1 hidden"><select class="w-full p-1 border rounded satuan-beli-bb"><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option></select></div>
+                    <div class="sm:col-span-5 flex gap-1"><input type="number" placeholder="Qty Pakai" class="w-1/2 p-1 border rounded qty-pakai-bb" oninput="hitungOtomatis()"><select class="w-1/2 p-1 border rounded satuan-pakai-bb" onchange="hitungOtomatis()"><option value="g">g</option><option value="ml">ml</option><option value="pcs">pcs</option></select></div>
+                    <div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-bb">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="sm:col-span-5 grid grid-cols-2 gap-1">
+                        <input type="text" placeholder="Nama Bahan Manual" class="w-full p-1 border rounded nama-bb font-semibold">
+                        <input type="number" placeholder="Harga Beli (Rp)" class="w-full p-1 border rounded harga-bb" oninput="hitungOtomatis()">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <select class="w-full p-1 border rounded satuan-beli-bb"><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option><option value="g">g</option><option value="ml">ml</option></select>
+                    </div>
+                    <div class="sm:col-span-4 flex gap-1">
+                        <input type="number" placeholder="Qty Pakai" class="w-1/2 p-1 border rounded qty-pakai-bb" oninput="hitungOtomatis()">
+                        <select class="w-1/2 p-1 border rounded satuan-pakai-bb" onchange="hitungOtomatis()"><option value="g">g</option><option value="ml">ml</option><option value="pcs">pcs</option></select>
+                    </div>
+                    <div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-bb">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            }
             container.appendChild(div);
             lucide.createIcons();
         }
 
         function pilihMasterBB(sel) {
             let row = sel.closest('.row-bb'); let val = sel.value;
-            let nama = row.querySelector('.nama-bb'); let harga = row.querySelector('.harga-bb'); let satuanBeli = row.querySelector('.satuan-beli-bb');
-            if(val !== "" && val !== "manual") {
+            if(val !== "") {
                 let data = masterData.bahanBaku[val].data;
-                nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; satuanBeli.value = (data[3] || 'kg').toLowerCase(); satuanBeli.disabled = true;
-            } else { nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false; satuanBeli.disabled = false; }
+                let namaIn = row.querySelector('.nama-bb'); let hargaIn = row.querySelector('.harga-bb'); let satuanBeliIn = row.querySelector('.satuan-beli-bb');
+                if(namaIn) namaIn.value = data[0];
+                if(hargaIn) hargaIn.value = data[1];
+                if(satuanBeliIn) satuanBeliIn.value = (data[3] || 'kg').toLowerCase();
+            }
             hitungOtomatis();
         }
 
-        function tambahBarisBahanPenolong() {
+        function tambahBarisBahanPenolong(tipe = 'master') {
             let container = document.getElementById('containerBahanPenolong');
             let div = document.createElement('div');
             div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bp bg-white p-2 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih Master --</option>`;
-            masterData.bahanPenolong.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterBP(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bp" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Qty" class="w-full p-1 border rounded qty-bp" oninput="hitungOtomatis()"></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bp" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1 flex justify-center"><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            
+            if (tipe === 'master') {
+                let opsi = `<option value="">-- Pilih dari Master Penolong --</option>`;
+                masterData.bahanPenolong.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
+                div.innerHTML = `
+                    <div class="sm:col-span-6"><select class="w-full p-1 border rounded bg-blue-50/50" onchange="pilihMasterBP(this)">${opsi}</select></div>
+                    <div class="sm:col-span-2 hidden"><input type="text" class="w-full p-1 border rounded nama-bp"></div>
+                    <div class="sm:col-span-2 hidden"><input type="number" class="w-full p-1 border rounded harga-bp" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-4"><input type="number" placeholder="Jumlah Qty" class="w-full p-1 border rounded qty-bp" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2 flex justify-end"><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="sm:col-span-6 grid grid-cols-2 gap-1">
+                        <input type="text" placeholder="Nama Item Manual" class="w-full p-1 border rounded nama-bp font-semibold">
+                        <input type="number" placeholder="Harga Satuan (Rp)" class="w-full p-1 border rounded harga-bp" oninput="hitungOtomatis()">
+                    </div>
+                    <div class="sm:col-span-4"><input type="number" placeholder="Jumlah Qty" class="w-full p-1 border rounded qty-bp" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2 flex justify-end"><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            }
             container.appendChild(div);
             lucide.createIcons();
         }
 
         function pilihMasterBP(sel) {
             let row = sel.closest('.row-bp'); let val = sel.value;
-            let nama = row.querySelector('.nama-bp'); let harga = row.querySelector('.harga-bp');
-            if(val !== "" && val !== "manual") { let data = masterData.bahanPenolong[val].data; nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; }
-            else { nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false; }
+            if(val !== "") {
+                let data = masterData.bahanPenolong[val].data;
+                let namaIn = row.querySelector('.nama-bp'); let hargaIn = row.querySelector('.harga-bp');
+                if(namaIn) namaIn.value = data[0];
+                if(hargaIn) hargaIn.value = data[1];
+            }
             hitungOtomatis();
         }
 
-        function tambahBarisTenagaKerja() {
+        function tambahBarisTenagaKerja(tipe = 'master') {
             let container = document.getElementById('containerTenagaKerja');
             let div = document.createElement('div');
             div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-tk bg-white p-2.5 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih Karyawan --</option>`;
-            masterData.tenagaKerja.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterTK(this)">${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Posisi" class="w-full p-1 border rounded nama-tk" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Gaji" class="w-full p-1 border rounded gaji-tk" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Jam/Hari" class="w-full p-1 border rounded jam-hari-tk" value="8" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Menit" class="w-full p-1 border rounded menit-resep-tk" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-tk">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            
+            if (tipe === 'master') {
+                let opsi = `<option value="">-- Pilih dari Master Tenaga Kerja --</option>`;
+                masterData.tenagaKerja.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
+                div.innerHTML = `
+                    <div class="sm:col-span-5"><select class="w-full p-1 border rounded bg-blue-50/50" onchange="pilihMasterTK(this)">${opsi}</select></div>
+                    <div class="sm:col-span-2 hidden"><input type="text" class="w-full p-1 border rounded nama-tk"></div>
+                    <div class="sm:col-span-2 hidden"><input type="number" class="w-full p-1 border rounded gaji-tk" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2 hidden"><input type="number" class="w-full p-1 border rounded jam-hari-tk" value="8"></div>
+                    <div class="sm:col-span-5"><input type="number" placeholder="Durasi Resep (Menit)" class="w-full p-1 border rounded menit-resep-tk" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-tk">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="sm:col-span-5 grid grid-cols-3 gap-1">
+                        <input type="text" placeholder="Posisi Manual" class="w-full p-1 border rounded nama-tk font-semibold">
+                        <input type="number" placeholder="Gaji/Bln" class="w-full p-1 border rounded gaji-tk" oninput="hitungOtomatis()">
+                        <input type="number" placeholder="Jam/Hari" class="w-full p-1 border rounded jam-hari-tk" value="8">
+                    </div>
+                    <div class="sm:col-span-5"><input type="number" placeholder="Durasi Resep (Menit)" class="w-full p-1 border rounded menit-resep-tk" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-tk">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            }
             container.appendChild(div);
             lucide.createIcons();
         }
 
         function pilihMasterTK(sel) {
             let row = sel.closest('.row-tk'); let val = sel.value;
-            let nama = row.querySelector('.nama-tk'); let gaji = row.querySelector('.gaji-tk'); let jamHari = row.querySelector('.jam-hari-tk');
-            if(val !== "" && val !== "manual") { let data = masterData.tenagaKerja[val].data; nama.value = data[0]; nama.disabled = true; gaji.value = data[1]; gaji.disabled = true; jamHari.value = data[2]||8; }
-            else { nama.value = ""; nama.disabled = false; gaji.value = ""; gaji.disabled = false; jamHari.disabled = false; }
+            if(val !== "") {
+                let data = masterData.tenagaKerja[val].data;
+                let namaIn = row.querySelector('.nama-tk'); let gajiIn = row.querySelector('.gaji-tk'); let jamIn = row.querySelector('.jam-hari-tk');
+                if(namaIn) namaIn.value = data[0];
+                if(gajiIn) gajiIn.value = data[1];
+                if(jamIn) jamIn.value = data[2] || 8;
+            }
             hitungOtomatis();
         }
 
-        function tambahBarisAlat() {
+        function tambahBarisAlat(tipe = 'master') {
             let container = document.getElementById('containerAlat');
             let div = document.createElement('div');
             div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-alat bg-white p-2 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih Alat --</option>`;
-            masterData.alat.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterAlat(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-alat" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Residu" class="w-full p-1 border rounded residu-alat" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Bln" class="w-full p-1 border rounded umur-alat" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Susut" class="w-full p-1 border rounded bg-gray-100 susut-alat" readonly></div><div class="sm:col-span-1 flex justify-center"><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            
+            if (tipe === 'master') {
+                let opsi = `<option value="">-- Pilih dari Master Alat --</option>`;
+                masterData.alat.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
+                div.innerHTML = `
+                    <div class="sm:col-span-6"><select class="w-full p-1 border rounded bg-blue-50/50" onchange="pilihMasterAlat(this)"><option value="">Pilih Alat</option>${opsi}</select></div>
+                    <div class="sm:col-span-2 hidden"><input type="text" class="w-full p-1 border rounded nama-alat"></div>
+                    <div class="sm:col-span-2 hidden"><input type="number" class="w-full p-1 border rounded harga-alat" oninput="hitungSusutAlat(this)"></div>
+                    <div class="sm:col-span-1 hidden"><input type="number" class="w-full p-1 border rounded residu-alat"></div>
+                    <div class="sm:col-span-1 hidden"><input type="number" class="w-full p-1 border rounded umur-alat"></div>
+                    <div class="sm:col-span-4"><input type="number" placeholder="Penyusutan/Porsi" class="w-full p-1 border rounded bg-gray-100 susut-alat" readonly></div>
+                    <div class="sm:col-span-2 flex justify-end"><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="sm:col-span-6 grid grid-cols-4 gap-1">
+                        <input type="text" placeholder="Nama Alat" class="w-full p-1 border rounded nama-alat font-semibold">
+                        <input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-alat" oninput="hitungSusutAlat(this)">
+                        <input type="number" placeholder="Residu" class="w-full p-1 border rounded residu-alat" value="0" oninput="hitungSusutAlat(this)">
+                        <input type="number" placeholder="Bln" class="w-full p-1 border rounded umur-alat" value="12" oninput="hitungSusutAlat(this)">
+                    </div>
+                    <div class="sm:col-span-4"><input type="number" placeholder="Penyusutan/Porsi" class="w-full p-1 border rounded bg-gray-100 susut-alat" readonly></div>
+                    <div class="sm:col-span-2 flex justify-end"><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            }
             container.appendChild(div);
             lucide.createIcons();
         }
 
         function pilihMasterAlat(sel) {
             let row = sel.closest('.row-alat'); let val = sel.value;
-            let nama = row.querySelector('.nama-alat'); let harga = row.querySelector('.harga-alat'); let residu = row.querySelector('.residu-alat'); let umur = row.querySelector('.umur-alat');
-            if(val !== "" && val !== "manual") { let data = masterData.alat[val].data; nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; residu.value = data[3]||0; residu.disabled = true; umur.value = data[4]||12; umur.disabled = true; hitungSusutAlat(harga); }
-            else { nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false; residu.value = ""; residu.disabled = false; umur.value = ""; umur.disabled = false; }
+            if(val !== "") {
+                let data = masterData.alat[val].data;
+                let namaIn = row.querySelector('.nama-alat'); let hargaIn = row.querySelector('.harga-alat'); let residuIn = row.querySelector('.residu-alat'); let umurIn = row.querySelector('.umur-alat');
+                if(namaIn) namaIn.value = data[0];
+                if(hargaIn) hargaIn.value = data[1];
+                if(residuIn) residuIn.value = data[3] || 0;
+                if(umurIn) umurIn.value = data[4] || 12;
+                hitungSusutAlat(hargaIn);
+            }
         }
 
         function hitungSusutAlat(el) {
@@ -462,22 +615,43 @@
             hitungOtomatis();
         }
 
-        function tambahBarisOverhead() {
+        function tambahBarisOverhead(tipe = 'master') {
             let container = document.getElementById('containerOverhead');
             let div = document.createElement('div');
             div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-oh bg-white p-2 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih Overhead --</option>`;
-            masterData.overhead.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterOH(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Keterangan" class="w-full p-1 border rounded nama-oh" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Biaya" class="w-full p-1 border rounded biaya-oh" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><input type="number" value="10" placeholder="TotBatch" class="w-full p-1 border rounded total-batch-harian" oninput="hitungOtomatis()"></div><div class="sm:col-span-1"><input type="number" value="1" placeholder="BatchRsp" class="w-full p-1 border rounded batch-resep-oh" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-oh">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            
+            if (tipe === 'master') {
+                let opsi = `<option value="">-- Pilih dari Master Overhead --</option>`;
+                masterData.overhead.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
+                div.innerHTML = `
+                    <div class="sm:col-span-4"><select class="w-full p-1 border rounded bg-blue-50/50" onchange="pilihMasterOH(this)"><option value="">Pilih Overhead</option>${opsi}</select></div>
+                    <div class="sm:col-span-2 hidden"><input type="text" class="w-full p-1 border rounded nama-oh"></div>
+                    <div class="sm:col-span-2 hidden"><input type="number" class="w-full p-1 border rounded biaya-oh" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2"><input type="number" value="10" placeholder="TotBatch" class="w-full p-1 border rounded total-batch-harian" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2"><input type="number" value="1" placeholder="BatchRsp" class="w-full p-1 border rounded batch-resep-oh" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-oh">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="sm:col-span-4 grid grid-cols-2 gap-1">
+                        <input type="text" placeholder="Keterangan" class="w-full p-1 border rounded nama-oh font-semibold">
+                        <input type="number" placeholder="Biaya/Bln" class="w-full p-1 border rounded biaya-oh" oninput="hitungOtomatis()">
+                    </div>
+                    <div class="sm:col-span-2"><input type="number" value="10" placeholder="TotBatch" class="w-full p-1 border rounded total-batch-harian" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-2"><input type="number" value="1" placeholder="BatchRsp" class="w-full p-1 border rounded batch-resep-oh" oninput="hitungOtomatis()"></div>
+                    <div class="sm:col-span-4 flex justify-between items-center"><span class="font-bold text-primary subtotal-oh">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold p-1 hover:bg-red-50 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+            }
             container.appendChild(div);
             lucide.createIcons();
         }
 
         function pilihMasterOH(sel) {
             let row = sel.closest('.row-oh'); let val = sel.value;
-            let nama = row.querySelector('.nama-oh'); let biaya = row.querySelector('.biaya-oh');
-            if(val !== "" && val !== "manual") { let data = masterData.overhead[val].data; nama.value = data[0]; nama.disabled = true; biaya.value = data[1]; biaya.disabled = true; }
-            else { nama.value = ""; nama.disabled = false; biaya.value = ""; biaya.disabled = false; }
+            if(val !== "") {
+                let data = masterData.overhead[val].data;
+                let namaIn = row.querySelector('.nama-oh'); let biayaIn = row.querySelector('.biaya-oh');
+                if(namaIn) namaIn.value = data[0];
+                if(biayaIn) biayaIn.value = data[1];
+            }
             hitungOtomatis();
         }
 
@@ -679,11 +853,62 @@
             document.getElementById('editResepId').value = item.id; document.getElementById('namaProduk').value = item.namaProduk; document.getElementById('jumlahProduksi').value = item.jumlahProduksi; document.getElementById('targetMargin').value = item.targetMargin; document.getElementById('visibilitasStaff').value = item.visibilitasStaff || 'buka';
 
             let json = JSON.parse(item.rincianJSON || '{}');
-            if(json.bb) { json.bb.forEach(b => { tambahBarisBahanBaku(); let rows = document.querySelectorAll('.row-bb'); let r = rows[rows.length - 1]; r.querySelector('.nama-bb').value = b.nama; r.querySelector('.nama-bb').disabled = false; r.querySelector('.harga-bb').value = b.hargaBeli; r.querySelector('.harga-bb').disabled = false; r.querySelector('.satuan-beli-bb').value = b.sBeli; r.querySelector('.satuan-beli-bb').disabled = false; r.querySelector('.qty-pakai-bb').value = b.qty; r.querySelector('.satuan-pakai-bb').value = b.sPakai; }); }
-            if(json.bp) { json.bp.forEach(b => { tambahBarisBahanPenolong(); let rows = document.querySelectorAll('.row-bp'); let r = rows[rows.length - 1]; r.querySelector('.nama-bp').value = b.nama; r.querySelector('.nama-bp').disabled = false; r.querySelector('.harga-bp').value = b.harga; r.querySelector('.harga-bp').disabled = false; r.querySelector('.qty-bp').value = b.qty; }); }
-            if(json.tk) { json.tk.forEach(t => { tambahBarisTenagaKerja(); let rows = document.querySelectorAll('.row-tk'); let r = rows[rows.length - 1]; r.querySelector('.nama-tk').value = t.nama; r.querySelector('.nama-tk').disabled = false; r.querySelector('.gaji-tk').value = t.gaji; r.querySelector('.gaji-tk').disabled = false; r.querySelector('.jam-hari-tk').value = t.jamHari; r.querySelector('.menit-resep-tk').value = t.menitResep; }); }
-            if(json.alat) { json.alat.forEach(a => { tambahBarisAlat(); let rows = document.querySelectorAll('.row-alat'); let r = rows[rows.length - 1]; r.querySelector('.nama-alat').value = a.nama; r.querySelector('.nama-alat').disabled = false; r.querySelector('.harga-alat').value = a.harga; r.querySelector('.harga-alat').disabled = false; r.querySelector('.residu-alat').value = a.residu; r.querySelector('.umur-alat').value = a.umur; hitungSusutAlat(r.querySelector('.harga-alat')); }); }
-            if(json.oh) { json.oh.forEach(o => { tambahBarisOverhead(); let rows = document.querySelectorAll('.row-oh'); let r = rows[rows.length - 1]; r.querySelector('.nama-oh').value = o.nama; r.querySelector('.nama-oh').disabled = false; r.querySelector('.biaya-oh').value = o.biaya; r.querySelector('.biaya-oh').disabled = false; if(o.totBatchHarian) r.querySelector('.total-batch-harian').value = o.totBatchHarian; if(o.batchResep) r.querySelector('.batch-resep-oh').value = o.batchResep; }); }
+            if(json.bb) { 
+                json.bb.forEach(b => { 
+                    tambahBarisBahanBaku('manual'); 
+                    let rows = document.querySelectorAll('.row-bb'); 
+                    let r = rows[rows.length - 1]; 
+                    r.querySelector('.nama-bb').value = b.nama; 
+                    r.querySelector('.harga-bb').value = b.hargaBeli; 
+                    r.querySelector('.satuan-beli-bb').value = b.sBeli; 
+                    r.querySelector('.qty-pakai-bb').value = b.qty; 
+                    r.querySelector('.satuan-pakai-bb').value = b.sPakai; 
+                }); 
+            }
+            if(json.bp) { 
+                json.bp.forEach(b => { 
+                    tambahBarisBahanPenolong('manual'); 
+                    let rows = document.querySelectorAll('.row-bp'); 
+                    let r = rows[rows.length - 1]; 
+                    r.querySelector('.nama-bp').value = b.nama; 
+                    r.querySelector('.harga-bp').value = b.harga; 
+                    r.querySelector('.qty-bp').value = b.qty; 
+                }); 
+            }
+            if(json.tk) { 
+                json.tk.forEach(t => { 
+                    tambahBarisTenagaKerja('manual'); 
+                    let rows = document.querySelectorAll('.row-tk'); 
+                    let r = rows[rows.length - 1]; 
+                    r.querySelector('.nama-tk').value = t.nama; 
+                    r.querySelector('.gaji-tk').value = t.gaji; 
+                    r.querySelector('.jam-hari-tk').value = t.jamHari; 
+                    r.querySelector('.menit-resep-tk').value = t.menitResep; 
+                }); 
+            }
+            if(json.alat) { 
+                json.alat.forEach(a => { 
+                    tambahBarisAlat('manual'); 
+                    let rows = document.querySelectorAll('.row-alat'); 
+                    let r = rows[rows.length - 1]; 
+                    r.querySelector('.nama-alat').value = a.nama; 
+                    r.querySelector('.harga-alat').value = a.harga; 
+                    r.querySelector('.residu-alat').value = a.residu; 
+                    r.querySelector('.umur-alat').value = a.umur; 
+                    hitungSusutAlat(r.querySelector('.harga-alat')); 
+                }); 
+            }
+            if(json.oh) { 
+                json.oh.forEach(o => { 
+                    tambahBarisOverhead('manual'); 
+                    let rows = document.querySelectorAll('.row-oh'); 
+                    let r = rows[rows.length - 1]; 
+                    r.querySelector('.nama-oh').value = o.nama; 
+                    r.querySelector('.biaya-oh').value = o.biaya; 
+                    if(o.totBatchHarian) r.querySelector('.total-batch-harian').value = o.totBatchHarian; 
+                    if(o.batchResep) r.querySelector('.batch-resep-oh').value = o.batchResep; 
+                }); 
+            }
 
             if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { document.querySelectorAll('#sectionForm input, #sectionForm select').forEach(el => el.disabled = true); document.getElementById('btnSimpanDatabase').classList.add('hidden'); } else { document.getElementById('btnSimpanDatabase').classList.remove('hidden'); }
             hitungOtomatis();
@@ -760,7 +985,6 @@
             let savedUser = localStorage.getItem('hpp_user'); let savedPass = localStorage.getItem('hpp_pass');
             if (savedUser && savedPass) { document.getElementById('loginUser').value = savedUser; document.getElementById('loginPass').value = savedPass; document.getElementById('rememberMe').checked = true; prosesLogin(); }
             
-            // Inisialisasi Lucide Icons
             lucide.createIcons();
         }
     </script>
