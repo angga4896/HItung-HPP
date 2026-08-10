@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kalkulator HPP & Manajemen Resep F&B</title>
     
-    <!-- PWA & iOS Meta Tags untuk Kemudahan Update -->
+    <!-- PWA & iOS Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="HPP F&B">
-    <link rel="apple-touch-icon" href="logo-minuman.png">
+    <link rel="apple-touch-icon" href="kedae_mattowa.png">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,10 +25,10 @@
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen p-4 sm:p-6" onload="initAplikasi()">
 
-    <!-- LOGIN MODAL DENGAN LOGO UTAMA -->
+    <!-- LOGIN MODAL DENGAN LOGO KEDAE_MATTOWA.PNG -->
     <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 text-center">
-            <img src="logo-minuman.png" alt="Logo Kedae Mattowa" class="w-24 h-24 mx-auto object-cover rounded-full shadow-md mb-2">
+            <img src="kedae_mattowa.png" alt="Logo Kedae Mattowa" class="w-24 h-24 mx-auto object-cover rounded-full shadow-md mb-2">
             <h2 class="text-xl font-bold text-primary">Login Sistem HPP & Master Data</h2>
             <div class="text-left">
                 <label class="block text-xs font-semibold text-gray-600 mb-1">Username</label>
@@ -164,7 +164,7 @@
                 </div>
             </div>
 
-            <!-- TAB 3: MANAJEMEN MASTER DATA (MINIMALIS & TABBED) -->
+            <!-- TAB 3: MANAJEMEN MASTER DATA -->
             <div id="sectionMaster" class="hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-primary text-lg">Manajemen Master Data</h3>
@@ -263,8 +263,8 @@
     </div>
 
     <script>
-        // Ganti URL di bawah dengan URL Web App Google Apps Script Anda (yang berakhiran /exec)
-        const API_URL "https://script.google.com/macros/s/AKfycbym3wcaaq8CQ7maMYEWXSv_pmNBT52bA7TwIzOo0FNDZSx54EysvFJOO5kgissOzSvFkw/exec";
+        // URL API Google Apps Script Anda yang sudah disematkan secara otomatis
+        const API_URL = "https://script.google.com/macros/s/AKfycbym3wcaaq8CQ7maMYEWXSv_pmNBT52bA7TwIzOo0FNDZSx54EysvFJOO5kgissOzSvFkw/exec";
         
         let currentUserRole = "";
         let masterData = { bahanBaku: [], bahanPenolong: [], tenagaKerja: [], alat: [], overhead: [] };
