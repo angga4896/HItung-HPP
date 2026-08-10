@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator HPP & Manajemen Resep F&B</title>
+    <title>Aplikasi Hitung HPP & Manajemen Resep</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { primary: '#1B365D', primaryHover: '#142845', accent: '#EAEFF5' } } }
+            theme: { extend: { colors: { primary: '#0F172A', primaryHover: '#1E293B', accent: '#38BDF8' } } }
         }
     </script>
     <!-- Library untuk Export Excel & PDF -->
@@ -16,50 +16,63 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="manifest" href="manifest.json">
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen p-4 sm:p-6" onload="initAplikasi()">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased min-h-screen p-4 sm:p-6" onload="initAplikasi()">
 
-    <!-- LOGIN MODAL -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h2 class="text-xl font-bold text-primary text-center">Login Sistem HPP & Master Data</h2>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Username</label>
-                <input type="text" id="loginUser" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:outline-none" placeholder="owner / staff">
+    <!-- LOGIN MODAL (MINIMALIS MODERN) -->
+    <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl max-w-sm w-full p-8 shadow-xl border border-slate-100 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-900 text-white font-bold text-xl mb-1 shadow-md">H</div>
+                <h2 class="text-xl font-bold tracking-tight text-slate-900">Aplikasi Hitung HPP</h2>
+                <p class="text-xs text-slate-500">Masuk untuk mengelola resep dan master data usaha</p>
             </div>
-            <div>
-                <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
-                <div class="relative">
-                    <input type="password" id="loginPass" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:outline-none pr-10" placeholder="password...">
-                    <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2 top-2 text-xs text-gray-500 hover:text-primary">👁️</button>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1.5">Username</label>
+                    <input type="text" id="loginUser" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-slate-900 focus:outline-none transition" placeholder="Masukkan username">
                 </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-600 mb-1.5">Password</label>
+                    <div class="relative">
+                        <input type="password" id="loginPass" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-slate-900 focus:outline-none pr-12 transition" placeholder="••••••••">
+                        <!-- Tombol Mata Minimalis -->
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-700 transition focus:outline-none">
+                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-600 pt-1">
+                    <label class="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" id="rememberMe" class="rounded border-slate-300 text-slate-900 focus:ring-slate-900 w-4 h-4">
+                        <span class="text-slate-600">Ingat perangkat ini</span>
+                    </label>
+                </div>
+                <button onclick="prosesLogin()" class="w-full bg-slate-900 text-white font-semibold py-3.5 rounded-xl hover:bg-slate-800 shadow-md transition active:scale-[0.98]">Masuk ke Sistem</button>
             </div>
-            <div class="flex items-center justify-between text-xs text-gray-600">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" id="rememberMe" class="rounded border-gray-300 text-primary focus:ring-primary">
-                    <span>Ingat saya di perangkat ini</span>
-                </label>
-            </div>
-            <button onclick="prosesLogin()" class="w-full bg-primary text-white font-bold py-2.5 rounded-lg hover:bg-primaryHover transition">Masuk</button>
         </div>
     </div>
 
     <!-- MAIN APP -->
-    <div id="appContent" class="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 hidden">
-        <div class="bg-primary text-white p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div id="appContent" class="max-w-5xl mx-auto bg-white shadow-xl shadow-slate-100 rounded-3xl overflow-hidden border border-slate-100 hidden">
+        <div class="bg-slate-900 text-white p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-                <h1 class="text-xl sm:text-2xl font-bold">Kalkulator HPP & Manajemen Resep F&B</h1>
-                <p class="text-blue-100 text-xs mt-1">Login Sebagai: <span id="labelRoleUser" class="font-bold underline"></span></p>
+                <h1 class="text-xl sm:text-2xl font-bold tracking-tight">Aplikasi Hitung HPP</h1>
+                <p class="text-slate-400 text-xs mt-1">Seksi Aktif: <span id="labelRoleUser" class="font-medium text-slate-200"></span></p>
             </div>
             <div class="flex gap-2 w-full sm:w-auto">
-                <button onclick="logoutApp()" class="text-xs bg-blue-900 text-white px-3 py-2 rounded-lg hover:bg-blue-950">Ganti Akun</button>
+                <button onclick="logoutApp()" class="text-xs bg-slate-800 text-slate-200 px-4 py-2.5 rounded-xl hover:bg-slate-700 font-medium transition">Keluar Akun</button>
             </div>
         </div>
 
-        <!-- NAVIGASI TAB UTAMA -->
-        <div class="flex border-b bg-gray-100 text-sm font-semibold overflow-x-auto">
-            <button onclick="gantiTab('form')" id="tabBtnForm" class="flex-1 py-3 px-4 text-center border-b-2 border-primary text-primary bg-white whitespace-nowrap">Kalkulasi & Resep</button>
-            <button onclick="gantiTab('daftar')" id="tabBtnDaftar" class="flex-1 py-3 px-4 text-center text-gray-500 hover:text-primary whitespace-nowrap">Daftar Resep Tersimpan</button>
-            <button onclick="gantiTab('master')" id="tabBtnMaster" class="flex-1 py-3 px-4 text-center text-gray-500 hover:text-primary whitespace-nowrap">Manajemen Master Data</button>
+        <!-- NAVIGASI TAB (MINIMALIS) -->
+        <div class="flex border-b border-slate-100 bg-slate-50/50 p-2 gap-2 text-sm font-medium overflow-x-auto">
+            <button onclick="gantiTab('form')" id="tabBtnForm" class="flex-1 py-2.5 px-4 text-center rounded-xl bg-white text-slate-900 shadow-sm whitespace-nowrap transition">Kalkulasi & Resep</button>
+            <button onclick="gantiTab('daftar')" id="tabBtnDaftar" class="flex-1 py-2.5 px-4 text-center rounded-xl text-slate-600 hover:text-slate-900 whitespace-nowrap transition">Daftar Resep Tersimpan</button>
+            <button onclick="gantiTab('master')" id="tabBtnMaster" class="flex-1 py-2.5 px-4 text-center rounded-xl text-slate-600 hover:text-slate-900 whitespace-nowrap transition">Manajemen Master Data</button>
         </div>
 
         <div class="p-6 sm:p-8 space-y-8">
@@ -70,186 +83,184 @@
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Produk / Resep F&B</label>
-                        <input type="text" id="namaProduk" placeholder="Contoh: Es Cendol Dawet Ayu" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Nama Produk / Resep F&B</label>
+                        <input type="text" id="namaProduk" placeholder="Contoh: Es Cendol Dawet Ayu" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-slate-900 focus:outline-none transition">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Jumlah Hasil Produksi (Batch / Porsi)</label>
-                        <input type="number" id="jumlahProduksi" value="1" min="1" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" oninput="hitungOtomatis()">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Jumlah Hasil Produksi (Batch / Porsi)</label>
+                        <input type="number" id="jumlahProduksi" value="1" min="1" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-slate-900 focus:outline-none transition" oninput="hitungOtomatis()">
                     </div>
                 </div>
 
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">1. Bahan Baku Utama</h3><div id="containerBahanBaku" class="space-y-2"></div><button type="button" onclick="tambahBarisBahanBaku()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Bahan Baku</button></div>
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">2. Bahan Penolong & Kemasan</h3><div id="containerBahanPenolong" class="space-y-2"></div><button type="button" onclick="tambahBarisBahanPenolong()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Bahan Penolong</button></div>
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">3. Tenaga Kerja Langsung</h3><div id="containerTenagaKerja" class="space-y-2"></div><button type="button" onclick="tambahBarisTenagaKerja()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Tenaga Kerja</button></div>
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">4. Penyusutan Alat</h3><div id="containerAlat" class="space-y-2"></div><button type="button" onclick="tambahBarisAlat()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Alat</button></div>
-                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">5. Biaya Overhead Usaha</h3><div id="containerOverhead" class="space-y-2"></div><button type="button" onclick="tambahBarisOverhead()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Overhead</button></div>
+                <div class="border border-slate-200 p-5 rounded-2xl bg-slate-50/50 space-y-3"><h3 class="font-bold text-slate-900 text-sm">1. Bahan Baku Utama</h3><div id="containerBahanBaku" class="space-y-2"></div><button type="button" onclick="tambahBarisBahanBaku()" class="text-xs bg-white border border-slate-200 text-slate-700 font-semibold px-3.5 py-2 rounded-xl hover:bg-slate-50 shadow-sm transition">+ Tambah Bahan Baku</button></div>
+                <div class="border border-slate-200 p-5 rounded-2xl bg-slate-50/50 space-y-3"><h3 class="font-bold text-slate-900 text-sm">2. Bahan Penolong & Kemasan</h3><div id="containerBahanPenolong" class="space-y-2"></div><button type="button" onclick="tambahBarisBahanPenolong()" class="text-xs bg-white border border-slate-200 text-slate-700 font-semibold px-3.5 py-2 rounded-xl hover:bg-slate-50 shadow-sm transition">+ Tambah Bahan Penolong</button></div>
+                <div class="border border-slate-200 p-5 rounded-2xl bg-slate-50/50 space-y-3"><h3 class="font-bold text-slate-900 text-sm">3. Tenaga Kerja Langsung</h3><div id="containerTenagaKerja" class="space-y-2"></div><button type="button" onclick="tambahBarisTenagaKerja()" class="text-xs bg-white border border-slate-200 text-slate-700 font-semibold px-3.5 py-2 rounded-xl hover:bg-slate-50 shadow-sm transition">+ Tambah Tenaga Kerja</button></div>
+                <div class="border border-slate-200 p-5 rounded-2xl bg-slate-50/50 space-y-3"><h3 class="font-bold text-slate-900 text-sm">4. Penyusutan Alat</h3><div id="containerAlat" class="space-y-2"></div><button type="button" onclick="tambahBarisAlat()" class="text-xs bg-white border border-slate-200 text-slate-700 font-semibold px-3.5 py-2 rounded-xl hover:bg-slate-50 shadow-sm transition">+ Tambah Alat</button></div>
+                <div class="border border-slate-200 p-5 rounded-2xl bg-slate-50/50 space-y-3"><h3 class="font-bold text-slate-900 text-sm">5. Biaya Overhead Usaha</h3><div id="containerOverhead" class="space-y-2"></div><button type="button" onclick="tambahBarisOverhead()" class="text-xs bg-white border border-slate-200 text-slate-700 font-semibold px-3.5 py-2 rounded-xl hover:bg-slate-50 shadow-sm transition">+ Tambah Overhead</button></div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-100">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Target Margin Keuntungan (%)</label>
-                        <input type="number" id="targetMargin" value="30" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" oninput="hitungOtomatis()">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1.5">Target Margin Keuntungan (%)</label>
+                        <input type="number" id="targetMargin" value="30" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-slate-900 focus:outline-none transition" oninput="hitungOtomatis()">
                     </div>
-                    <div id="boxStatusKunci" class="bg-yellow-50 p-3 rounded-xl border border-yellow-200">
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Akses & Visibilitas Resep untuk Staff</label>
-                        <select id="visibilitasStaff" class="w-full text-xs p-2 border rounded-lg font-semibold bg-white">
+                    <div id="boxStatusKunci" class="bg-amber-50/50 p-4 rounded-2xl border border-amber-200/60">
+                        <label class="block text-xs font-bold text-amber-900 mb-1">Akses & Visibilitas Resep untuk Staff</label>
+                        <select id="visibilitasStaff" class="w-full text-xs p-2.5 bg-white border border-amber-200 rounded-xl font-medium focus:outline-none">
                             <option value="buka">🔓 Izinkan Staff Melihat Resep Ini</option>
                             <option value="kunci">🔒 Kunci / Sembunyikan Resep dari Staff</option>
                         </select>
                     </div>
                 </div>
 
-                <div class="border p-4 rounded-xl bg-blue-50/50 border-blue-200 space-y-4">
-                    <h3 class="font-bold text-primary text-sm">Pengaturan Harga Jual per Platform</h3>
+                <div class="border border-slate-200 p-5 rounded-2xl bg-slate-50/30 space-y-4">
+                    <h3 class="font-bold text-slate-900 text-sm">Pengaturan Harga Jual per Platform</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                        <div class="bg-white p-3 rounded-lg border space-y-1"><span class="font-bold text-xs text-blue-900 uppercase">1. OFFLINE</span><div><label class="text-[10px] text-gray-500">Diskon (%)</label><input type="number" id="diskonOffline" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Promo (%)</label><input type="number" id="promoOffline" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div></div>
-                        <div class="bg-white p-3 rounded-lg border space-y-1"><span class="font-bold text-xs text-green-700 uppercase">2. GoFood</span><div><label class="text-[10px] text-gray-500">Komisi (%)</label><input type="number" id="komisiGoFood" value="25" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Diskon (%)</label><input type="number" id="diskonGoFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Promo (%)</label><input type="number" id="promoGoFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapGoFood" value="1000" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div></div>
-                        <div class="bg-white p-3 rounded-lg border space-y-1"><span class="font-bold text-xs text-emerald-700 uppercase">3. GrabFood</span><div><label class="text-[10px] text-gray-500">Komisi (%)</label><input type="number" id="komisiGrabFood" value="25" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Diskon (%)</label><input type="number" id="diskonGrabFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Promo (%)</label><input type="number" id="promoGrabFood" value="10" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapGrabFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div></div>
-                        <div class="bg-white p-3 rounded-lg border space-y-1"><span class="font-bold text-xs text-orange-700 uppercase">4. ShopeeFood</span><div><label class="text-[10px] text-gray-500">Komisi (%)</label><input type="number" id="komisiShopeeFood" value="25" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Diskon (%)</label><input type="number" id="diskonShopeeFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Promo (%)</label><input type="number" id="promoShopeeFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapShopeeFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div></div>
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-sm"><span class="font-bold text-xs text-slate-900 uppercase">1. OFFLINE</span><div><label class="text-[10px] font-semibold text-slate-400">Diskon (%)</label><input type="number" id="diskonOffline" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Promo (%)</label><input type="number" id="promoOffline" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div></div>
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-sm"><span class="font-bold text-xs text-emerald-600 uppercase">2. GoFood</span><div><label class="text-[10px] font-semibold text-slate-400">Komisi (%)</label><input type="number" id="komisiGoFood" value="25" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Diskon (%)</label><input type="number" id="diskonGoFood" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Promo (%)</label><input type="number" id="promoGoFood" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapGoFood" value="1000" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div></div>
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-sm"><span class="font-bold text-xs text-emerald-700 uppercase">3. GrabFood</span><div><label class="text-[10px] font-semibold text-slate-400">Komisi (%)</label><input type="number" id="komisiGrabFood" value="25" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Diskon (%)</label><input type="number" id="diskonGrabFood" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Promo (%)</label><input type="number" id="promoGrabFood" value="10" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapGrabFood" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div></div>
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-sm"><span class="font-bold text-xs text-amber-700 uppercase">4. ShopeeFood</span><div><label class="text-[10px] font-semibold text-slate-400">Komisi (%)</label><input type="number" id="komisiShopeeFood" value="25" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Diskon (%)</label><input type="number" id="diskonShopeeFood" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Promo (%)</label><input type="number" id="promoShopeeFood" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] font-semibold text-slate-400">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapShopeeFood" value="0" class="w-full p-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" oninput="hitungOtomatis()"></div></div>
                     </div>
                 </div>
 
-                <div class="bg-blue-50 border border-blue-200 p-6 rounded-2xl space-y-3">
-                    <h3 class="font-bold text-primary text-lg border-b border-blue-200 pb-2">Ringkasan HPP</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
-                        <p>Total Biaya Bahan Baku: <span id="resTotalBB" class="font-bold float-right">Rp 0</span></p>
-                        <p>Total Biaya Bahan Penolong: <span id="resTotalBP" class="font-bold float-right">Rp 0</span></p>
-                        <p>Total Biaya Tenaga Kerja: <span id="resTotalTK" class="font-bold float-right">Rp 0</span></p>
-                        <p>Total Penyusutan & Overhead: <span id="resTotalOH" class="font-bold float-right">Rp 0</span></p>
-                        <hr class="sm:col-span-2 border-blue-200">
-                        <p class="text-sm font-bold">Total Modal Produksi: <span id="resTotalModal" class="font-bold float-right">Rp 0</span></p>
-                        <p class="text-sm font-bold text-primary">HPP per Unit / Porsi: <span id="resHppUnit" class="font-bold float-right text-base">Rp 0</span></p>
+                <div class="bg-slate-900 text-white p-6 rounded-3xl space-y-3 shadow-lg">
+                    <h3 class="font-bold text-slate-100 text-base border-b border-slate-800 pb-2">Ringkasan HPP</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm text-slate-300">
+                        <p>Total Biaya Bahan Baku: <span id="resTotalBB" class="font-semibold text-white float-right">Rp 0</span></p>
+                        <p>Total Biaya Bahan Penolong: <span id="resTotalBP" class="font-semibold text-white float-right">Rp 0</span></p>
+                        <p>Total Biaya Tenaga Kerja: <span id="resTotalTK" class="font-semibold text-white float-right">Rp 0</span></p>
+                        <p>Total Penyusutan & Overhead: <span id="resTotalOH" class="font-semibold text-white float-right">Rp 0</span></p>
+                        <hr class="sm:col-span-2 border-slate-800 my-1">
+                        <p class="text-sm font-bold text-slate-200">Total Modal Produksi: <span id="resTotalModal" class="font-bold text-white float-right">Rp 0</span></p>
+                        <p class="text-sm font-bold text-sky-400">HPP per Unit / Porsi: <span id="resHppUnit" class="font-bold text-sky-400 float-right text-base">Rp 0</span></p>
                     </div>
                 </div>
 
-                <div class="bg-white border p-4 rounded-xl space-y-3">
-                    <h4 class="font-bold text-gray-700 text-sm">Harga Jual per Platform:</h4>
+                <div class="bg-white border border-slate-200 p-5 rounded-2xl space-y-3 shadow-sm">
+                    <h4 class="font-bold text-slate-900 text-sm">Harga Jual per Platform:</h4>
                     <div id="listPerbandinganPlatform" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs"></div>
                 </div>
 
                 <div class="flex flex-wrap sm:flex-nowrap gap-3 pt-2" id="boxTombolAksi">
-                    <button type="button" id="btnSimpanDatabase" onclick="kirimData()" class="w-full bg-primary text-white font-bold py-3 px-4 text-sm rounded-xl hover:bg-primaryHover transition">💾 Simpan / Update Data</button>
+                    <button type="button" id="btnSimpanDatabase" onclick="kirimData()" class="w-full bg-slate-900 text-white font-semibold py-4 px-6 text-sm rounded-2xl hover:bg-slate-800 shadow-md transition active:scale-[0.98]">💾 Simpan / Update Data Resep</button>
                 </div>
             </div>
 
             <!-- TAB 2: DAFTAR RESEP -->
             <div id="sectionDaftar" class="space-y-4 hidden">
                 <div class="flex justify-between items-center">
-                    <h3 class="font-bold text-primary text-lg">Daftar Resep Tersimpan</h3>
-                    <button onclick="muatDaftarResep()" class="text-xs bg-blue-100 text-primary font-bold px-3 py-1.5 rounded-lg">🔄 Muat Ulang</button>
+                    <h3 class="font-bold text-slate-900 text-lg">Daftar Resep Tersimpan</h3>
+                    <button onclick="muatDaftarResep()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl transition">🔄 Muat Ulang</button>
                 </div>
-                <!-- Tabel Resep Bersih & Bergulir -->
-                <div class="overflow-y-auto max-h-[500px] border rounded-xl shadow-inner relative bg-white">
+                <div class="overflow-y-auto max-h-[500px] border border-slate-200 rounded-2xl shadow-sm relative bg-white">
                     <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm">
+                        <thead class="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200">
                             <tr>
-                                <th class="p-3">Nama Produk / Resep</th>
-                                <th class="p-3">HPP / Unit</th>
-                                <th class="p-3">Status</th>
-                                <th class="p-3 text-center">Aksi Buka / Edit</th>
-                                <th class="p-3 text-center">Export / Unduh</th>
+                                <th class="p-3.5">Nama Produk / Resep</th>
+                                <th class="p-3.5">HPP / Unit</th>
+                                <th class="p-3.5">Status</th>
+                                <th class="p-3.5 text-center">Aksi Buka / Edit</th>
+                                <th class="p-3.5 text-center">Export / Unduh</th>
                             </tr>
                         </thead>
-                        <tbody id="tabelResepBody" class="divide-y divide-gray-100">
-                            <tr><td colspan="5" class="p-4 text-center text-gray-500">Memuat data...</td></tr>
+                        <tbody id="tabelResepBody" class="divide-y divide-slate-100">
+                            <tr><td colspan="5" class="p-6 text-center text-slate-400">Memuat data...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- TAB 3: MANAJEMEN MASTER DATA (MINIMALIS & TABBED) -->
-            <div id="sectionMaster" class="hidden">
+            <!-- TAB 3: MANAJEMEN MASTER DATA -->
+            <div id="sectionMaster" class="hidden space-y-4">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-primary text-lg">Manajemen Master Data</h3>
-                    <button onclick="ambilMasterDanInisialisasi()" class="text-xs bg-blue-100 text-primary font-bold px-3 py-1.5 rounded-lg">🔄 Segarkan Data</button>
+                    <h3 class="font-bold text-slate-900 text-lg">Manajemen Master Data</h3>
+                    <button onclick="ambilMasterDanInisialisasi()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl transition">🔄 Segarkan Data</button>
                 </div>
 
-                <div class="flex gap-2 overflow-x-auto border-b pb-3 mb-5">
-                    <button id="btn-master-bb" onclick="bukaMasterPanel('master-bb')" class="btn-master-tab px-4 py-2 bg-primary text-white font-semibold rounded-lg text-xs whitespace-nowrap">📦 Bahan Baku</button>
-                    <button id="btn-master-bp" onclick="bukaMasterPanel('master-bp')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">🏷️ Bahan Penolong</button>
-                    <button id="btn-master-tk" onclick="bukaMasterPanel('master-tk')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">👨‍🍳 Tenaga Kerja</button>
-                    <button id="btn-master-alat" onclick="bukaMasterPanel('master-alat')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">⚙️ Master Alat</button>
-                    <button id="btn-master-oh" onclick="bukaMasterPanel('master-oh')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">💡 Biaya Overhead</button>
+                <div class="flex gap-2 overflow-x-auto border-b border-slate-200 pb-3 mb-5">
+                    <button id="btn-master-bb" onclick="bukaMasterPanel('master-bb')" class="btn-master-tab px-4 py-2.5 bg-slate-900 text-white font-semibold rounded-xl text-xs whitespace-nowrap shadow-sm transition">📦 Bahan Baku</button>
+                    <button id="btn-master-bp" onclick="bukaMasterPanel('master-bp')" class="btn-master-tab px-4 py-2.5 bg-slate-100 text-slate-600 font-semibold rounded-xl text-xs whitespace-nowrap hover:bg-slate-200 transition">🏷️ Bahan Penolong</button>
+                    <button id="btn-master-tk" onclick="bukaMasterPanel('master-tk')" class="btn-master-tab px-4 py-2.5 bg-slate-100 text-slate-600 font-semibold rounded-xl text-xs whitespace-nowrap hover:bg-slate-200 transition">👨‍🍳 Tenaga Kerja</button>
+                    <button id="btn-master-alat" onclick="bukaMasterPanel('master-alat')" class="btn-master-tab px-4 py-2.5 bg-slate-100 text-slate-600 font-semibold rounded-xl text-xs whitespace-nowrap hover:bg-slate-200 transition">⚙️ Master Alat</button>
+                    <button id="btn-master-oh" onclick="bukaMasterPanel('master-oh')" class="btn-master-tab px-4 py-2.5 bg-slate-100 text-slate-600 font-semibold rounded-xl text-xs whitespace-nowrap hover:bg-slate-200 transition">💡 Biaya Overhead</button>
                 </div>
 
                 <!-- PANEL BAHAN BAKU -->
                 <div id="master-bb" class="panel-master space-y-4">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
-                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Bahan Baku</p>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-slate-900 border-b border-slate-200 pb-2">➕ Input / Edit Bahan Baku</p>
                         <input type="hidden" id="editMasterIdBB" value="">
                         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                            <div><label class="text-[10px] font-semibold text-gray-500">Nama Bahan</label><input type="text" id="mNamaBB" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Harga Beli (Rp)</label><input type="number" id="mHargaBB" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Jml Stok</label><input type="number" id="mQtyBB" value="1" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Satuan Beli</label><select id="mSatuanBB" class="w-full p-2 border rounded bg-white"><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option><option value="g">g</option><option value="ml">ml</option></select></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Nama Bahan</label><input type="text" id="mNamaBB" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Harga Beli (Rp)</label><input type="number" id="mHargaBB" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Jml Stok</label><input type="number" id="mQtyBB" value="1" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Satuan Beli</label><select id="mSatuanBB" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option><option value="g">g</option><option value="ml">ml</option></select></div>
                         </div>
-                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('bahanBaku')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('bahanBaku')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                        <div class="flex gap-2 pt-2"><button onclick="simpanMasterManual('bahanBaku')" class="bg-slate-900 text-white font-semibold px-4 py-2.5 rounded-xl text-xs shadow-sm">💾 Simpan Data</button><button onclick="resetFormMaster('bahanBaku')" class="bg-slate-200 text-slate-700 font-semibold px-4 py-2.5 rounded-xl text-xs">Reset</button></div>
                     </div>
-                    <!-- Tabel Terkunci Tinggi & Bergulir (Anti Numpuk) -->
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Nama Bahan</th><th class="p-3">Harga Beli</th><th class="p-3">Stok</th><th class="p-3">Satuan</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterBB" class="divide-y divide-gray-100"></tbody></table></div>
+                    <div class="overflow-y-auto max-h-80 bg-white border border-slate-200 rounded-2xl shadow-sm relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200"><tr><th class="p-3.5">Nama Bahan</th><th class="p-3.5">Harga Beli</th><th class="p-3.5">Stok</th><th class="p-3.5">Satuan</th><th class="p-3.5 text-center">Aksi</th></tr></thead><tbody id="tabelMasterBB" class="divide-y divide-slate-100"></tbody></table></div>
                 </div>
 
                 <!-- PANEL BAHAN PENOLONG -->
                 <div id="master-bp" class="panel-master space-y-4 hidden">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
-                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Bahan Penolong</p>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-slate-900 border-b border-slate-200 pb-2">➕ Input / Edit Bahan Penolong</p>
                         <input type="hidden" id="editMasterIdBP" value="">
                         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
-                            <div><label class="text-[10px] font-semibold text-gray-500">Nama Item</label><input type="text" id="mNamaBP" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Harga Beli (Rp)</label><input type="number" id="mHargaBP" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Jml Stok</label><input type="number" id="mQtyBP" value="1" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Satuan Beli</label><select id="mSatuanBP" class="w-full p-2 border rounded bg-white"><option value="pcs">pcs</option><option value="pack">pack</option><option value="roll">roll</option></select></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Nama Item</label><input type="text" id="mNamaBP" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Harga Beli (Rp)</label><input type="number" id="mHargaBP" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Jml Stok</label><input type="number" id="mQtyBP" value="1" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Satuan Beli</label><select id="mSatuanBP" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"><option value="pcs">pcs</option><option value="pack">pack</option><option value="roll">roll</option></select></div>
                         </div>
-                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('bahanPenolong')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('bahanPenolong')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                        <div class="flex gap-2 pt-2"><button onclick="simpanMasterManual('bahanPenolong')" class="bg-slate-900 text-white font-semibold px-4 py-2.5 rounded-xl text-xs shadow-sm">💾 Simpan Data</button><button onclick="resetFormMaster('bahanPenolong')" class="bg-slate-200 text-slate-700 font-semibold px-4 py-2.5 rounded-xl text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Nama Item</th><th class="p-3">Harga Satuan</th><th class="p-3">Stok</th><th class="p-3">Satuan</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterBP" class="divide-y divide-gray-100"></tbody></table></div>
+                    <div class="overflow-y-auto max-h-80 bg-white border border-slate-200 rounded-2xl shadow-sm relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200"><tr><th class="p-3.5">Nama Item</th><th class="p-3.5">Harga Satuan</th><th class="p-3.5">Stok</th><th class="p-3.5">Satuan</th><th class="p-3.5 text-center">Aksi</th></tr></thead><tbody id="tabelMasterBP" class="divide-y divide-slate-100"></tbody></table></div>
                 </div>
 
                 <!-- PANEL TENAGA KERJA -->
                 <div id="master-tk" class="panel-master space-y-4 hidden">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
-                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Tenaga Kerja</p>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-slate-900 border-b border-slate-200 pb-2">➕ Input / Edit Tenaga Kerja</p>
                         <input type="hidden" id="editMasterIdTK" value="">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                            <div><label class="text-[10px] font-semibold text-gray-500">Posisi / Karyawan</label><input type="text" id="mNamaTK" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Gaji Bulanan (Rp)</label><input type="number" id="mGajiTK" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Jam Kerja / Hari</label><input type="number" id="mJamTK" value="8" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Posisi / Karyawan</label><input type="text" id="mNamaTK" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Gaji Bulanan (Rp)</label><input type="number" id="mGajiTK" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Jam Kerja / Hari</label><input type="number" id="mJamTK" value="8" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
                         </div>
-                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('tenagaKerja')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('tenagaKerja')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                        <div class="flex gap-2 pt-2"><button onclick="simpanMasterManual('tenagaKerja')" class="bg-slate-900 text-white font-semibold px-4 py-2.5 rounded-xl text-xs shadow-sm">💾 Simpan Data</button><button onclick="resetFormMaster('tenagaKerja')" class="bg-slate-200 text-slate-700 font-semibold px-4 py-2.5 rounded-xl text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Posisi / Karyawan</th><th class="p-3">Gaji Bulanan</th><th class="p-3">Jam / Hari</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterTK" class="divide-y divide-gray-100"></tbody></table></div>
+                    <div class="overflow-y-auto max-h-80 bg-white border border-slate-200 rounded-2xl shadow-sm relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200"><tr><th class="p-3.5">Posisi / Karyawan</th><th class="p-3.5">Gaji Bulanan</th><th class="p-3.5">Jam / Hari</th><th class="p-3.5 text-center">Aksi</th></tr></thead><tbody id="tabelMasterTK" class="divide-y divide-slate-100"></tbody></table></div>
                 </div>
 
                 <!-- PANEL ALAT -->
                 <div id="master-alat" class="panel-master space-y-4 hidden">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
-                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Master Alat</p>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-slate-900 border-b border-slate-200 pb-2">➕ Input / Edit Master Alat</p>
                         <input type="hidden" id="editMasterIdAlat" value="">
                         <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
-                            <div><label class="text-[10px] font-semibold text-gray-500">Nama Alat</label><input type="text" id="mNamaAlat" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Harga Beli (Rp)</label><input type="number" id="mHargaAlat" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Jml Unit</label><input type="number" id="mQtyAlat" value="1" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Residu (Rp)</label><input type="number" id="mResiduAlat" value="0" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Umur (Bln)</label><input type="number" id="mUmurAlat" value="12" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Nama Alat</label><input type="text" id="mNamaAlat" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Harga Beli (Rp)</label><input type="number" id="mHargaAlat" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Jml Unit</label><input type="number" id="mQtyAlat" value="1" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Residu (Rp)</label><input type="number" id="mResiduAlat" value="0" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Umur (Bln)</label><input type="number" id="mUmurAlat" value="12" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
                         </div>
-                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('alat')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('alat')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                        <div class="flex gap-2 pt-2"><button onclick="simpanMasterManual('alat')" class="bg-slate-900 text-white font-semibold px-4 py-2.5 rounded-xl text-xs shadow-sm">💾 Simpan Data</button><button onclick="resetFormMaster('alat')" class="bg-slate-200 text-slate-700 font-semibold px-4 py-2.5 rounded-xl text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Nama Alat</th><th class="p-3">Harga Beli</th><th class="p-3">Jml Unit</th><th class="p-3">Residu</th><th class="p-3">Umur</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterAlat" class="divide-y divide-gray-100"></tbody></table></div>
+                    <div class="overflow-y-auto max-h-80 bg-white border border-slate-200 rounded-2xl shadow-sm relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200"><tr><th class="p-3.5">Nama Alat</th><th class="p-3.5">Harga Beli</th><th class="p-3.5">Jml Unit</th><th class="p-3.5">Residu</th><th class="p-3.5">Umur</th><th class="p-3.5 text-center">Aksi</th></tr></thead><tbody id="tabelMasterAlat" class="divide-y divide-slate-100"></tbody></table></div>
                 </div>
 
                 <!-- PANEL OVERHEAD -->
                 <div id="master-oh" class="panel-master space-y-4 hidden">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
-                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Biaya Overhead</p>
+                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-slate-900 border-b border-slate-200 pb-2">➕ Input / Edit Biaya Overhead</p>
                         <input type="hidden" id="editMasterIdOH" value="">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                            <div><label class="text-[10px] font-semibold text-gray-500">Keterangan Biaya</label><input type="text" id="mNamaOH" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Biaya Bulanan (Rp)</label><input type="number" id="mBiayaOH" class="w-full p-2 border rounded"></div>
-                            <div><label class="text-[10px] font-semibold text-gray-500">Jml Pemakaian/Bulan</label><input type="number" id="mQtyOH" value="1" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Keterangan Biaya</label><input type="text" id="mNamaOH" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Biaya Bulanan (Rp)</label><input type="number" id="mBiayaOH" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
+                            <div><label class="text-[10px] font-semibold text-slate-500 mb-1 block">Jml Pemakaian/Bulan</label><input type="number" id="mQtyOH" value="1" class="w-full p-2.5 bg-white border border-slate-200 rounded-xl"></div>
                         </div>
-                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('overhead')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('overhead')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                        <div class="flex gap-2 pt-2"><button onclick="simpanMasterManual('overhead')" class="bg-slate-900 text-white font-semibold px-4 py-2.5 rounded-xl text-xs shadow-sm">💾 Simpan Data</button><button onclick="resetFormMaster('overhead')" class="bg-slate-200 text-slate-700 font-semibold px-4 py-2.5 rounded-xl text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Keterangan Biaya</th><th class="p-3">Biaya Bulanan (Rp)</th><th class="p-3">Jml Pemakaian</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterOH" class="divide-y divide-gray-100"></tbody></table></div>
+                    <div class="overflow-y-auto max-h-80 bg-white border border-slate-200 rounded-2xl shadow-sm relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-slate-50 text-slate-600 sticky top-0 z-10 border-b border-slate-200"><tr><th class="p-3.5">Keterangan Biaya</th><th class="p-3.5">Biaya Bulanan (Rp)</th><th class="p-3.5">Jml Pemakaian</th><th class="p-3.5 text-center">Aksi</th></tr></thead><tbody id="tabelMasterOH" class="divide-y divide-slate-100"></tbody></table></div>
                 </div>
 
             </div>
@@ -257,7 +268,6 @@
     </div>
 
     <script>
-        // Ganti URL di bawah dengan URL Web App Google Apps Script Anda (yang berakhiran /exec)
         const API_URL = "https://script.google.com/macros/s/AKfycbym3wcaaq8CQ7maMYEWXSv_pmNBT52bA7TwIzOo0FNDZSx54EysvFJOO5kgissOzSvFkw/exec";
         
         let currentUserRole = "";
@@ -287,10 +297,10 @@
         function gantiTab(tab) {
             ['form', 'daftar', 'master'].forEach(s => {
                 document.getElementById('section' + s.charAt(0).toUpperCase() + s.slice(1)).classList.add('hidden');
-                document.getElementById('tabBtn' + s.charAt(0).toUpperCase() + s.slice(1)).className = "flex-1 py-3 px-4 text-center text-gray-500 hover:text-primary whitespace-nowrap";
+                document.getElementById('tabBtn' + s.charAt(0).toUpperCase() + s.slice(1)).className = "flex-1 py-2.5 px-4 text-center rounded-xl text-slate-600 hover:text-slate-900 whitespace-nowrap transition";
             });
             document.getElementById('section' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
-            document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "flex-1 py-3 px-4 text-center border-b-2 border-primary text-primary bg-white whitespace-nowrap";
+            document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "flex-1 py-2.5 px-4 text-center rounded-xl bg-white text-slate-900 shadow-sm whitespace-nowrap transition";
             if(tab === 'daftar') muatDaftarResep(); if(tab === 'master') renderTabelMasterDataKategori();
         }
 
@@ -298,13 +308,23 @@
             document.querySelectorAll('.panel-master').forEach(el => el.classList.add('hidden'));
             document.getElementById(targetId).classList.remove('hidden');
             document.querySelectorAll('.btn-master-tab').forEach(btn => {
-                btn.classList.remove('bg-primary', 'text-white'); btn.classList.add('bg-gray-200', 'text-gray-700');
+                btn.classList.remove('bg-slate-900', 'text-white', 'shadow-sm'); btn.classList.add('bg-slate-100', 'text-slate-600');
             });
-            document.getElementById('btn-' + targetId).classList.remove('bg-gray-200', 'text-gray-700');
-            document.getElementById('btn-' + targetId).classList.add('bg-primary', 'text-white');
+            document.getElementById('btn-' + targetId).classList.remove('bg-slate-100', 'text-slate-600');
+            document.getElementById('btn-' + targetId).classList.add('bg-slate-900', 'text-white', 'shadow-sm');
         }
 
-        function togglePasswordVisibility() { let pi = document.getElementById('loginPass'); pi.type = pi.type === 'password' ? 'text' : 'password'; }
+        function togglePasswordVisibility() {
+            let pi = document.getElementById('loginPass');
+            let icon = document.getElementById('eyeIcon');
+            if (pi.type === 'password') {
+                pi.type = 'text';
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />`;
+            } else {
+                pi.type = 'password';
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
+            }
+        }
 
         async function prosesLogin() {
             let u = document.getElementById('loginUser').value;
@@ -346,10 +366,10 @@
         function tambahBarisBahanBaku() {
             let container = document.getElementById('containerBahanBaku');
             let div = document.createElement('div');
-            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bb bg-white p-2.5 rounded-lg border text-xs';
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bb bg-white p-3 rounded-xl border border-slate-200 text-xs shadow-sm';
             let opsi = `<option value="">-- Pilih Master --</option>`;
             masterData.bahanBaku.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]} / ${item.data[3]||'kg'})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded font-semibold" onchange="pilihMasterBB(this)">${opsi}<option value="manual">+ Input Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bb" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bb" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><select class="w-full p-1 border rounded satuan-beli-bb" disabled><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex gap-1"><input type="number" placeholder="Pakai" class="w-1/2 p-1 border rounded qty-pakai-bb" oninput="hitungOtomatis()"><select class="w-1/2 p-1 border rounded satuan-pakai-bb" onchange="hitungOtomatis()"><option value="g">g</option><option value="ml">ml</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-bb">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg font-medium" onchange="pilihMasterBB(this)">${opsi}<option value="manual">+ Input Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg nama-bb" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg harga-bb" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg satuan-beli-bb" disabled><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex gap-1"><input type="number" placeholder="Pakai" class="w-1/2 p-2 bg-slate-50 border border-slate-200 rounded-lg qty-pakai-bb" oninput="hitungOtomatis()"><select class="w-1/2 p-2 bg-slate-50 border border-slate-200 rounded-lg satuan-pakai-bb" onchange="hitungOtomatis()"><option value="g">g</option><option value="ml">ml</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-slate-900 subtotal-bb">Rp 0</span><button onclick="hapusBaris(this)" class="text-rose-500 font-bold p-1">✕</button></div>`;
             container.appendChild(div);
         }
 
@@ -366,10 +386,10 @@
         function tambahBarisBahanPenolong() {
             let container = document.getElementById('containerBahanPenolong');
             let div = document.createElement('div');
-            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bp bg-white p-2 rounded-lg border text-xs';
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bp bg-white p-3 rounded-xl border border-slate-200 text-xs shadow-sm';
             let opsi = `<option value="">-- Pilih Master --</option>`;
             masterData.bahanPenolong.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterBP(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bp" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Qty" class="w-full p-1 border rounded qty-bp" oninput="hitungOtomatis()"></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bp" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg" onchange="pilihMasterBP(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Nama" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg nama-bp" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Qty" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg qty-bp" oninput="hitungOtomatis()"></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg harga-bp" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1 text-right"><button onclick="hapusBaris(this)" class="text-rose-500 font-bold p-1">✕</button></div>`;
             container.appendChild(div);
         }
 
@@ -384,10 +404,10 @@
         function tambahBarisTenagaKerja() {
             let container = document.getElementById('containerTenagaKerja');
             let div = document.createElement('div');
-            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-tk bg-white p-2.5 rounded-lg border text-xs';
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-tk bg-white p-3 rounded-xl border border-slate-200 text-xs shadow-sm';
             let opsi = `<option value="">-- Pilih Karyawan --</option>`;
             masterData.tenagaKerja.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterTK(this)">${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Posisi" class="w-full p-1 border rounded nama-tk" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Gaji" class="w-full p-1 border rounded gaji-tk" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Jam/Hari" class="w-full p-1 border rounded jam-hari-tk" value="8" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Menit" class="w-full p-1 border rounded menit-resep-tk" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between"><span class="font-bold text-primary subtotal-tk">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg" onchange="pilihMasterTK(this)">${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Posisi" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg nama-tk" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Gaji" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg gaji-tk" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Jam/Hari" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg jam-hari-tk" value="8" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Menit" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg menit-resep-tk" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-slate-900 subtotal-tk">Rp 0</span><button onclick="hapusBaris(this)" class="text-rose-500 font-bold p-1">✕</button></div>`;
             container.appendChild(div);
         }
 
@@ -402,10 +422,10 @@
         function tambahBarisAlat() {
             let container = document.getElementById('containerAlat');
             let div = document.createElement('div');
-            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-alat bg-white p-2 rounded-lg border text-xs';
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-alat bg-white p-3 rounded-xl border border-slate-200 text-xs shadow-sm';
             let opsi = `<option value="">-- Pilih Alat --</option>`;
             masterData.alat.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterAlat(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-alat" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Residu" class="w-full p-1 border rounded residu-alat" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Bln" class="w-full p-1 border rounded umur-alat" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Susut" class="w-full p-1 border rounded bg-gray-100 susut-alat" readonly></div><div class="sm:col-span-1"><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg" onchange="pilihMasterAlat(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg nama-alat" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg harga-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Residu" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg residu-alat" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Bln" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg umur-alat" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Susut" class="w-full p-2 bg-slate-100 border border-slate-200 rounded-lg susut-alat" readonly></div><div class="sm:col-span-1 text-right"><button onclick="hapusBaris(this)" class="text-rose-500 font-bold p-1">✕</button></div>`;
             container.appendChild(div);
         }
 
@@ -429,10 +449,10 @@
         function tambahBarisOverhead() {
             let container = document.getElementById('containerOverhead');
             let div = document.createElement('div');
-            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-oh bg-white p-2 rounded-lg border text-xs';
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-oh bg-white p-3 rounded-xl border border-slate-200 text-xs shadow-sm';
             let opsi = `<option value="">-- Pilih Overhead --</option>`;
             masterData.overhead.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterOH(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Keterangan" class="w-full p-1 border rounded nama-oh" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Biaya" class="w-full p-1 border rounded biaya-oh" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><input type="number" value="10" placeholder="TotBatch" class="w-full p-1 border rounded total-batch-harian" oninput="hitungOtomatis()"></div><div class="sm:col-span-1"><input type="number" value="1" placeholder="BatchRsp" class="w-full p-1 border rounded batch-resep-oh" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between"><span class="font-bold text-primary subtotal-oh">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg" onchange="pilihMasterOH(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Keterangan" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg nama-oh" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Biaya" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg biaya-oh" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><input type="number" value="10" placeholder="TotBatch" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg total-batch-harian" oninput="hitungOtomatis()"></div><div class="sm:col-span-1"><input type="number" value="1" placeholder="BatchRsp" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg batch-resep-oh" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-slate-900 subtotal-oh">Rp 0</span><button onclick="hapusBaris(this)" class="text-rose-500 font-bold p-1">✕</button></div>`;
             container.appendChild(div);
         }
 
@@ -518,7 +538,7 @@
             configs.forEach(cfg => {
                 let pot = cfg.komisi + cfg.diskon + cfg.promo;
                 let finalPrice = pot < 100 ? (hargaDasar + cfg.biayaTetap) / (1 - (pot / 100)) : hargaDasar + cfg.biayaTetap;
-                html += `<div class="bg-gray-50 border p-3 rounded-xl flex flex-col justify-between shadow-sm space-y-1"><span class="font-bold text-gray-700">${label[cfg.id]}</span><span class="text-primary font-extrabold text-sm mt-1">Rp ${Math.round(finalPrice).toLocaleString('id-ID')}</span></div>`;
+                html += `<div class="bg-slate-50 border border-slate-200 p-3.5 rounded-xl flex flex-col justify-between shadow-sm space-y-1"><span class="font-bold text-slate-700">${label[cfg.id]}</span><span class="text-slate-900 font-extrabold text-sm mt-1">Rp ${Math.round(finalPrice).toLocaleString('id-ID')}</span></div>`;
             });
             container.innerHTML = html;
         }
@@ -571,17 +591,17 @@
                 let key = k === 'BB' ? 'bahanBaku' : k === 'BP' ? 'bahanPenolong' : k === 'TK' ? 'tenagaKerja' : k === 'Alat' ? 'alat' : 'overhead';
                 let tbody = document.getElementById('tabelMaster' + k);
                 let list = masterData[key];
-                if(!list || list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-gray-400">Belum ada data.</td></tr>`; return; }
+                if(!list || list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Belum ada data.</td></tr>`; return; }
                 let html = '';
                 list.forEach((item, idx) => {
                     if(k === 'BB' || k === 'BP') {
-                        html += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3">${item.data[2]||1}</td><td class="p-3">${item.data[3]||'-'}</td><td class="p-3 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button></td></tr>`;
+                        html += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3.5 font-medium text-slate-900">${item.data[0]}</td><td class="p-3.5">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3.5">${item.data[2]||1}</td><td class="p-3.5">${item.data[3]||'-'}</td><td class="p-3.5 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[11px] bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg font-medium hover:bg-amber-100 transition">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[11px] bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg font-medium hover:bg-rose-100 transition">Hapus</button></td></tr>`;
                     } else if(k === 'TK') {
-                        html += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3">${item.data[2]} Jam/Hari</td><td class="p-3 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button></td></tr>`;
+                        html += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3.5 font-medium text-slate-900">${item.data[0]}</td><td class="p-3.5">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3.5">${item.data[2]} Jam/Hari</td><td class="p-3.5 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[11px] bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg font-medium hover:bg-amber-100 transition">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[11px] bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg font-medium hover:bg-rose-100 transition">Hapus</button></td></tr>`;
                     } else if(k === 'Alat') {
-                        html += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3">${item.data[2]||1} Unit</td><td class="p-3">Rp ${Number(item.data[3]||0).toLocaleString('id-ID')}</td><td class="p-3">${item.data[4]||12} Bln</td><td class="p-3 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button></td></tr>`;
+                        html += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3.5 font-medium text-slate-900">${item.data[0]}</td><td class="p-3.5">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3.5">${item.data[2]||1} Unit</td><td class="p-3.5">Rp ${Number(item.data[3]||0).toLocaleString('id-ID')}</td><td class="p-3.5">${item.data[4]||12} Bln</td><td class="p-3.5 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[11px] bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg font-medium hover:bg-amber-100 transition">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[11px] bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg font-medium hover:bg-rose-100 transition">Hapus</button></td></tr>`;
                     } else if(k === 'OH') {
-                        html += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')} /bln</td><td class="p-3">${item.data[2]||1} Pemakaian</td><td class="p-3 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button></td></tr>`;
+                        html += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3.5 font-medium text-slate-900">${item.data[0]}</td><td class="p-3.5">Rp ${Number(item.data[1]).toLocaleString('id-ID')} /bln</td><td class="p-3.5">${item.data[2]||1} Pemakaian</td><td class="p-3.5 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[11px] bg-amber-50 text-amber-700 px-2.5 py-1 rounded-lg font-medium hover:bg-amber-100 transition">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[11px] bg-rose-50 text-rose-600 px-2.5 py-1 rounded-lg font-medium hover:bg-rose-100 transition">Hapus</button></td></tr>`;
                     }
                 });
                 tbody.innerHTML = html;
@@ -610,18 +630,18 @@
         }
 
         async function muatDaftarResep() {
-            let tbody = document.getElementById('tabelResepBody'); tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Memuat data...</td></tr>`;
+            let tbody = document.getElementById('tabelResepBody'); tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Memuat data...</td></tr>`;
             let data = await fetchAPI('ambilDaftarResep', { userRole: currentUserRole });
-            if(!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Belum ada resep tersimpan.</td></tr>`; return; }
+            if(!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-400">Belum ada resep tersimpan.</td></tr>`; return; }
             let html = '';
             data.forEach(item => {
-                let st = item.visibilitasStaff === 'kunci' ? `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px]">🔒 Kunci</span>` : `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]">🔓 Buka</span>`;
-                html += `<tr class="border-b hover:bg-gray-50">
-                    <td class="p-3 font-semibold text-primary">${item.namaProduk}</td>
-                    <td class="p-3 font-bold text-blue-800">Rp ${Math.round(item.hppPerUnit).toLocaleString('id-ID')}</td>
-                    <td class="p-3">${st}</td>
-                    <td class="p-3 text-center space-x-1"><button onclick="bukaResepLengkap('${item.id}')" class="text-[10px] bg-blue-100 text-primary px-2 py-1 rounded font-bold">Lihat/Edit</button> ${currentUserRole === 'admin' || currentUserRole === 'owner' ? `<button onclick="hapusResep('${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button>` : ``}</td>
-                    <td class="p-3 text-center space-x-1"><button onclick="unduhPDFDariList('${item.id}')" class="text-[10px] bg-red-600 text-white px-2 py-1 rounded font-bold">📄 PDF</button> <button onclick="unduhExcelDariList('${item.id}')" class="text-[10px] bg-green-600 text-white px-2 py-1 rounded font-bold">📊 Excel</button></td>
+                let st = item.visibilitasStaff === 'kunci' ? `<span class="bg-rose-50 text-rose-700 px-2.5 py-1 rounded-full text-[11px] font-medium">🔒 Kunci</span>` : `<span class="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full text-[11px] font-medium">🔓 Buka</span>`;
+                html += `<tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="p-3.5 font-semibold text-slate-900">${item.namaProduk}</td>
+                    <td class="p-3.5 font-bold text-slate-800">Rp ${Math.round(item.hppPerUnit).toLocaleString('id-ID')}</td>
+                    <td class="p-3.5">${st}</td>
+                    <td class="p-3.5 text-center space-x-1.5"><button onclick="bukaResepLengkap('${item.id}')" class="text-[11px] bg-slate-100 text-slate-700 hover:bg-slate-200 px-3 py-1.5 rounded-xl font-medium transition">Lihat/Edit</button> ${currentUserRole === 'admin' || currentUserRole === 'owner' ? `<button onclick="hapusResep('${item.id}')" class="text-[11px] bg-rose-50 text-rose-600 hover:bg-rose-100 px-3 py-1.5 rounded-xl font-medium transition">Hapus</button>` : ``}</td>
+                    <td class="p-3.5 text-center space-x-1.5"><button onclick="unduhPDFDariList('${item.id}')" class="text-[11px] bg-rose-600 text-white hover:bg-rose-700 px-3 py-1.5 rounded-xl font-medium transition">📄 PDF</button> <button onclick="unduhExcelDariList('${item.id}')" class="text-[11px] bg-emerald-600 text-white hover:bg-emerald-700 px-3 py-1.5 rounded-xl font-medium transition">📊 Excel</button></td>
                 </tr>`;
             });
             tbody.innerHTML = html;
@@ -658,7 +678,6 @@
             }
         }
 
-        // FUNGSI PARSING & EXPORT PDF/EXCEL YANG TELAH DIPERBAIKI
         function parseDataResepUntukExport(item) {
             let rincian = [];
             let json = {};
@@ -694,7 +713,7 @@
                         trRows += `<tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 4px;">${r[0]}</td><td style="padding: 6px 4px;">${r[1]}</td><td style="padding: 6px 4px; text-align: center;">${r[2]} ${r[3]}</td><td style="padding: 6px 4px; text-align: right;">Rp ${Number(r[4]).toLocaleString('id-ID')}</td></tr>`; 
                     });
                 }
-                let tpl = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;"><h1 style="color: #1B365D; border-bottom: 2px solid #1B365D; padding-bottom: 10px; margin-bottom: 20px;">Rincian HPP Resep</h1><table style="width: 100%; margin-bottom: 20px; font-size: 14px;"><tr><td style="font-weight: bold; width: 150px;">Nama Resep:</td><td>${dataExport.nama}</td></tr><tr><td style="font-weight: bold;">Jumlah Produksi:</td><td>${dataExport.batch} Porsi/Batch</td></tr><tr><td style="font-weight: bold;">HPP / Porsi:</td><td>Rp ${Math.round(dataExport.hpp).toLocaleString('id-ID')}</td></tr><tr><td style="font-weight: bold;">Harga Jual Dasar:</td><td>Rp ${Math.round(dataExport.hargaDasar).toLocaleString('id-ID')}</td></tr></table><h3 style="background-color: #EAEFF5; padding: 8px; font-size: 14px;">Breakdown Komposisi Item Biaya</h3><table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;"><tr style="background-color: #1B365D; color: white;"><th style="padding: 8px 4px; text-align: left;">Kategori</th><th style="padding: 8px 4px; text-align: left;">Nama Item</th><th style="padding: 8px 4px; text-align: center;">Kuantitas</th><th style="padding: 8px 4px; text-align: right;">Biaya (Rp)</th></tr>${trRows}</table><p style="margin-top: 40px; font-size: 10px; color: #888; text-align: center;">Dokumen HPP dicetak dari Sistem Internal.</p></div>`;
+                let tpl = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;"><h1 style="color: #0F172A; border-bottom: 2px solid #0F172A; padding-bottom: 10px; margin-bottom: 20px;">Rincian HPP Resep</h1><table style="width: 100%; margin-bottom: 20px; font-size: 14px;"><tr><td style="font-weight: bold; width: 150px;">Nama Resep:</td><td>${dataExport.nama}</td></tr><tr><td style="font-weight: bold;">Jumlah Produksi:</td><td>${dataExport.batch} Porsi/Batch</td></tr><tr><td style="font-weight: bold;">HPP / Porsi:</td><td>Rp ${Math.round(dataExport.hpp).toLocaleString('id-ID')}</td></tr><tr><td style="font-weight: bold;">Harga Jual Dasar:</td><td>Rp ${Math.round(dataExport.hargaDasar).toLocaleString('id-ID')}</td></tr></table><h3 style="background-color: #F1F5F9; padding: 8px; font-size: 14px;">Breakdown Komposisi Item Biaya</h3><table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;"><tr style="background-color: #0F172A; color: white;"><th style="padding: 8px 4px; text-align: left;">Kategori</th><th style="padding: 8px 4px; text-align: left;">Nama Item</th><th style="padding: 8px 4px; text-align: center;">Kuantitas</th><th style="padding: 8px 4px; text-align: right;">Biaya (Rp)</th></tr>${trRows}</table><p style="margin-top: 40px; font-size: 10px; color: #888; text-align: center;">Dokumen HPP dicetak dari Aplikasi Hitung HPP.</p></div>`;
                 let opt = { margin: 0.5, filename: `HPP_${dataExport.nama.replace(/\s+/g,'_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
                 let el = document.createElement('div'); el.innerHTML = tpl; html2pdf().set(opt).from(el).save();
             }
