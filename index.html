@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator HPP & Manajemen Resep</title>
+    <title>Kalkulator HPP & Manajemen Resep F&B</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -11,10 +11,9 @@
             theme: { extend: { colors: { primary: '#1B365D', primaryHover: '#142845', accent: '#EAEFF5' } } }
         }
     </script>
-    <!-- Library Export Excel & PDF -->
+    <!-- Library untuk Export Excel & PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <!-- PWA Manifest Link -->
     <link rel="manifest" href="manifest.json">
 </head>
 <body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen p-4 sm:p-6" onload="initAplikasi()">
@@ -52,12 +51,11 @@
                 <p class="text-blue-100 text-xs mt-1">Login Sebagai: <span id="labelRoleUser" class="font-bold underline"></span></p>
             </div>
             <div class="flex gap-2 w-full sm:w-auto">
-                <button id="btnInstallPWA" onclick="installAppPWA()" class="hidden text-xs bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-2 rounded-lg transition flex items-center gap-1">📲 Instal Aplikasi</button>
                 <button onclick="logoutApp()" class="text-xs bg-blue-900 text-white px-3 py-2 rounded-lg hover:bg-blue-950">Ganti Akun</button>
             </div>
         </div>
 
-        <!-- NAVIGASI TAB -->
+        <!-- NAVIGASI TAB UTAMA -->
         <div class="flex border-b bg-gray-100 text-sm font-semibold overflow-x-auto">
             <button onclick="gantiTab('form')" id="tabBtnForm" class="flex-1 py-3 px-4 text-center border-b-2 border-primary text-primary bg-white whitespace-nowrap">Kalkulasi & Resep</button>
             <button onclick="gantiTab('daftar')" id="tabBtnDaftar" class="flex-1 py-3 px-4 text-center text-gray-500 hover:text-primary whitespace-nowrap">Daftar Resep Tersimpan</button>
@@ -65,6 +63,7 @@
         </div>
 
         <div class="p-6 sm:p-8 space-y-8">
+            
             <!-- TAB 1: FORM KALKULASI -->
             <div id="sectionForm" class="space-y-6">
                 <input type="hidden" id="editResepId" value="">
@@ -129,9 +128,7 @@
                 </div>
 
                 <div class="flex flex-wrap sm:flex-nowrap gap-3 pt-2" id="boxTombolAksi">
-                    <button type="button" onclick="unduhPDFFormAktif()" class="flex-1 bg-red-600 text-white font-bold py-3 px-2 text-sm rounded-xl hover:bg-red-700 transition">📄 PDF Resep</button>
-                    <button type="button" onclick="unduhExcelFormAktif()" class="flex-1 bg-green-600 text-white font-bold py-3 px-2 text-sm rounded-xl hover:bg-green-700 transition">📊 Excel Resep</button>
-                    <button type="button" id="btnSimpanDatabase" onclick="kirimData()" class="w-full sm:w-auto sm:flex-1 bg-primary text-white font-bold py-3 px-4 text-sm rounded-xl hover:bg-primaryHover transition">💾 Simpan / Update Data</button>
+                    <button type="button" id="btnSimpanDatabase" onclick="kirimData()" class="w-full bg-primary text-white font-bold py-3 px-4 text-sm rounded-xl hover:bg-primaryHover transition">💾 Simpan / Update Data</button>
                 </div>
             </div>
 
@@ -141,9 +138,10 @@
                     <h3 class="font-bold text-primary text-lg">Daftar Resep Tersimpan</h3>
                     <button onclick="muatDaftarResep()" class="text-xs bg-blue-100 text-primary font-bold px-3 py-1.5 rounded-lg">🔄 Muat Ulang</button>
                 </div>
-                <div class="overflow-x-auto border rounded-xl">
+                <!-- Tabel Resep Bersih & Bergulir -->
+                <div class="overflow-y-auto max-h-[500px] border rounded-xl shadow-inner relative bg-white">
                     <table class="w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-gray-100 text-gray-700 border-b">
+                        <thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm">
                             <tr>
                                 <th class="p-3">Nama Produk / Resep</th>
                                 <th class="p-3">HPP / Unit</th>
@@ -152,14 +150,14 @@
                                 <th class="p-3 text-center">Export / Unduh</th>
                             </tr>
                         </thead>
-                        <tbody id="tabelResepBody">
+                        <tbody id="tabelResepBody" class="divide-y divide-gray-100">
                             <tr><td colspan="5" class="p-4 text-center text-gray-500">Memuat data...</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- TAB 3: MANAJEMEN MASTER DATA (DENGAN SCROLL INTERNAL & STICKY HEADER) -->
+            <!-- TAB 3: MANAJEMEN MASTER DATA (MINIMALIS & TABBED) -->
             <div id="sectionMaster" class="hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-primary text-lg">Manajemen Master Data</h3>
@@ -174,7 +172,7 @@
                     <button id="btn-master-oh" onclick="bukaMasterPanel('master-oh')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">💡 Biaya Overhead</button>
                 </div>
 
-                <!-- MASTER BB -->
+                <!-- PANEL BAHAN BAKU -->
                 <div id="master-bb" class="panel-master space-y-4">
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
                         <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Bahan Baku</p>
@@ -187,15 +185,11 @@
                         </div>
                         <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('bahanBaku')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('bahanBaku')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
-                        <table class="w-full text-left text-xs whitespace-nowrap">
-                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Nama Bahan</th><th class="p-3">Harga Beli</th><th class="p-3">Stok</th><th class="p-3">Satuan</th><th class="p-3 text-center">Aksi</th></tr></thead>
-                            <tbody id="tabelMasterBB" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
+                    <!-- Tabel Terkunci Tinggi & Bergulir (Anti Numpuk) -->
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Nama Bahan</th><th class="p-3">Harga Beli</th><th class="p-3">Stok</th><th class="p-3">Satuan</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterBB" class="divide-y divide-gray-100"></tbody></table></div>
                 </div>
 
-                <!-- MASTER BP -->
+                <!-- PANEL BAHAN PENOLONG -->
                 <div id="master-bp" class="panel-master space-y-4 hidden">
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
                         <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Bahan Penolong</p>
@@ -208,15 +202,10 @@
                         </div>
                         <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('bahanPenolong')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('bahanPenolong')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
-                        <table class="w-full text-left text-xs whitespace-nowrap">
-                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Nama Item</th><th class="p-3">Harga Satuan</th><th class="p-3">Stok</th><th class="p-3">Satuan</th><th class="p-3 text-center">Aksi</th></tr></thead>
-                            <tbody id="tabelMasterBP" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Nama Item</th><th class="p-3">Harga Satuan</th><th class="p-3">Stok</th><th class="p-3">Satuan</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterBP" class="divide-y divide-gray-100"></tbody></table></div>
                 </div>
 
-                <!-- MASTER TK -->
+                <!-- PANEL TENAGA KERJA -->
                 <div id="master-tk" class="panel-master space-y-4 hidden">
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
                         <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Tenaga Kerja</p>
@@ -228,15 +217,10 @@
                         </div>
                         <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('tenagaKerja')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('tenagaKerja')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
-                        <table class="w-full text-left text-xs whitespace-nowrap">
-                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Posisi / Karyawan</th><th class="p-3">Gaji Bulanan</th><th class="p-3">Jam / Hari</th><th class="p-3 text-center">Aksi</th></tr></thead>
-                            <tbody id="tabelMasterTK" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Posisi / Karyawan</th><th class="p-3">Gaji Bulanan</th><th class="p-3">Jam / Hari</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterTK" class="divide-y divide-gray-100"></tbody></table></div>
                 </div>
 
-                <!-- MASTER ALAT -->
+                <!-- PANEL ALAT -->
                 <div id="master-alat" class="panel-master space-y-4 hidden">
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
                         <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Master Alat</p>
@@ -250,15 +234,10 @@
                         </div>
                         <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('alat')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('alat')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
-                        <table class="w-full text-left text-xs whitespace-nowrap">
-                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Nama Alat</th><th class="p-3">Harga Beli</th><th class="p-3">Jml Unit</th><th class="p-3">Residu</th><th class="p-3">Umur</th><th class="p-3 text-center">Aksi</th></tr></thead>
-                            <tbody id="tabelMasterAlat" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Nama Alat</th><th class="p-3">Harga Beli</th><th class="p-3">Jml Unit</th><th class="p-3">Residu</th><th class="p-3">Umur</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterAlat" class="divide-y divide-gray-100"></tbody></table></div>
                 </div>
 
-                <!-- MASTER OH -->
+                <!-- PANEL OVERHEAD -->
                 <div id="master-oh" class="panel-master space-y-4 hidden">
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
                         <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Biaya Overhead</p>
@@ -270,12 +249,7 @@
                         </div>
                         <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('overhead')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('overhead')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
                     </div>
-                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
-                        <table class="w-full text-left text-xs whitespace-nowrap">
-                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Keterangan Biaya</th><th class="p-3">Biaya Bulanan (Rp)</th><th class="p-3">Jml Pemakaian</th><th class="p-3 text-center">Aksi</th></tr></thead>
-                            <tbody id="tabelMasterOH" class="divide-y divide-gray-100"></tbody>
-                        </table>
-                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner relative"><table class="w-full text-left text-xs whitespace-nowrap"><thead class="bg-gray-100 text-gray-700 sticky top-0 z-10 shadow-sm"><tr><th class="p-3">Keterangan Biaya</th><th class="p-3">Biaya Bulanan (Rp)</th><th class="p-3">Jml Pemakaian</th><th class="p-3 text-center">Aksi</th></tr></thead><tbody id="tabelMasterOH" class="divide-y divide-gray-100"></tbody></table></div>
                 </div>
 
             </div>
@@ -283,28 +257,12 @@
     </div>
 
     <script>
-        // Masukkan URL Web App Google Apps Script Anda di bawah ini
-        const API_URL = "https://script.google.com/macros/s/AKfycbym3wcaaq8CQ7maMYEWXSv_pmNBT52bA7TwIzOo0FNDZSx54EysvFJOO5kgissOzSvFkw/exec"; 
-
+        // Ganti URL di bawah dengan URL Web App Google Apps Script Anda (yang berakhiran /exec)
+        const API_URL = "https://script.google.com/macros/s/GANTI_DENGAN_URL_ANDA/exec";
+        
         let currentUserRole = "";
         let masterData = { bahanBaku: [], bahanPenolong: [], tenagaKerja: [], alat: [], overhead: [] };
         let cacheHitung = {};
-        let deferredPrompt = null;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            document.getElementById('btnInstallPWA').classList.remove('hidden');
-        });
-
-        function installAppPWA() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') document.getElementById('btnInstallPWA').classList.add('hidden');
-                    deferredPrompt = null;
-                });
-            }
-        }
 
         async function fetchAPI(action, payload = {}) {
             try {
@@ -314,65 +272,16 @@
                     body: JSON.stringify({ action: action, payload: payload })
                 });
                 const result = await response.json();
-                if (result.status === 'success') return result.data;
-                else throw new Error(result.message);
+                if (result.status === 'success') {
+                    return result.data;
+                } else {
+                    throw new Error(result.message);
+                }
             } catch (error) {
                 console.error("API Error:", error);
                 alert("Gagal terhubung ke database: " + error.message);
                 return null;
             }
-        }
-
-        function togglePasswordVisibility() {
-            let pi = document.getElementById('loginPass'); pi.type = pi.type === 'password' ? 'text' : 'password';
-        }
-
-        async function prosesLogin() {
-            let u = document.getElementById('loginUser').value;
-            let p = document.getElementById('loginPass').value;
-            let remember = document.getElementById('rememberMe').checked;
-
-            let res = await fetchAPI('prosesLogin', { username: u, password: p });
-            if(res && res.success) {
-                currentUserRole = res.role.toLowerCase();
-                document.getElementById('labelRoleUser').innerText = u + " (" + currentUserRole.toUpperCase() + ")";
-                document.getElementById('loginModal').style.display = 'none';
-                document.getElementById('appContent').classList.remove('hidden');
-
-                if(remember) { localStorage.setItem('hpp_user', u); localStorage.setItem('hpp_pass', p); }
-                else { localStorage.removeItem('hpp_user'); localStorage.removeItem('hpp_pass'); }
-
-                if(currentUserRole !== 'admin' && currentUserRole !== 'owner') {
-                    document.getElementById('boxStatusKunci').classList.add('hidden');
-                    document.getElementById('tabBtnMaster').classList.add('hidden');
-                }
-                ambilMasterDanInisialisasi();
-            } else if(res) { alert(res.message); }
-        }
-
-        function logoutApp() {
-            localStorage.removeItem('hpp_user'); localStorage.removeItem('hpp_pass'); location.reload();
-        }
-
-        async function ambilMasterDanInisialisasi() {
-            let data = await fetchAPI('ambilSemuaMasterData');
-            if(data) {
-                masterData = data;
-                kosongkanForm();
-                tambahBarisBahanBaku(); tambahBarisBahanPenolong(); tambahBarisTenagaKerja(); tambahBarisAlat(); tambahBarisOverhead();
-                hitungOtomatis(); renderTabelMasterDataKategori();
-            }
-        }
-
-        function kosongkanForm() {
-            document.getElementById('editResepId').value = '';
-            document.getElementById('namaProduk').value = '';
-            document.getElementById('jumlahProduksi').value = 1;
-            document.getElementById('containerBahanBaku').innerHTML = '';
-            document.getElementById('containerBahanPenolong').innerHTML = '';
-            document.getElementById('containerTenagaKerja').innerHTML = '';
-            document.getElementById('containerAlat').innerHTML = '';
-            document.getElementById('containerOverhead').innerHTML = '';
         }
 
         function gantiTab(tab) {
@@ -382,9 +291,7 @@
             });
             document.getElementById('section' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
             document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "flex-1 py-3 px-4 text-center border-b-2 border-primary text-primary bg-white whitespace-nowrap";
-
-            if(tab === 'daftar') muatDaftarResep();
-            if(tab === 'master') renderTabelMasterDataKategori();
+            if(tab === 'daftar') muatDaftarResep(); if(tab === 'master') renderTabelMasterDataKategori();
         }
 
         function bukaMasterPanel(targetId) {
@@ -397,14 +304,52 @@
             document.getElementById('btn-' + targetId).classList.add('bg-primary', 'text-white');
         }
 
-        // FORM BUILDERS (BB, BP, TK, Alat, OH)
+        function togglePasswordVisibility() { let pi = document.getElementById('loginPass'); pi.type = pi.type === 'password' ? 'text' : 'password'; }
+
+        async function prosesLogin() {
+            let u = document.getElementById('loginUser').value;
+            let p = document.getElementById('loginPass').value;
+            let remember = document.getElementById('rememberMe').checked;
+            let res = await fetchAPI('prosesLogin', { username: u, password: p });
+            if(res && res.success) {
+                currentUserRole = res.role.toLowerCase();
+                document.getElementById('labelRoleUser').innerText = u + " (" + currentUserRole.toUpperCase() + ")";
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('appContent').classList.remove('hidden');
+                if(remember) { localStorage.setItem('hpp_user', u); localStorage.setItem('hpp_pass', p); } 
+                else { localStorage.removeItem('hpp_user'); localStorage.removeItem('hpp_pass'); }
+                if(currentUserRole !== 'admin' && currentUserRole !== 'owner') {
+                    document.getElementById('boxStatusKunci').classList.add('hidden');
+                    document.getElementById('tabBtnMaster').classList.add('hidden');
+                }
+                ambilMasterDanInisialisasi();
+            } else if(res) { alert(res.message); }
+        }
+
+        function logoutApp() { localStorage.removeItem('hpp_user'); localStorage.removeItem('hpp_pass'); location.reload(); }
+
+        async function ambilMasterDanInisialisasi() {
+            let data = await fetchAPI('ambilSemuaMasterData');
+            if(data) {
+                masterData = data;
+                kosongkanForm(); tambahBarisBahanBaku(); tambahBarisBahanPenolong(); tambahBarisTenagaKerja(); tambahBarisAlat(); tambahBarisOverhead(); hitungOtomatis();
+                renderTabelMasterDataKategori();
+            }
+        }
+
+        function kosongkanForm() {
+            document.getElementById('editResepId').value = ''; document.getElementById('namaProduk').value = ''; document.getElementById('jumlahProduksi').value = 1;
+            document.getElementById('containerBahanBaku').innerHTML = ''; document.getElementById('containerBahanPenolong').innerHTML = '';
+            document.getElementById('containerTenagaKerja').innerHTML = ''; document.getElementById('containerAlat').innerHTML = ''; document.getElementById('containerOverhead').innerHTML = '';
+        }
+
         function tambahBarisBahanBaku() {
             let container = document.getElementById('containerBahanBaku');
             let div = document.createElement('div');
             div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bb bg-white p-2.5 rounded-lg border text-xs';
             let opsi = `<option value="">-- Pilih Master --</option>`;
             masterData.bahanBaku.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]} / ${item.data[3]||'kg'})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded font-semibold" onchange="pilihMasterBB(this)">${opsi}<option value="manual">+ Input Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bb" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bb" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><select class="w-full p-1 border rounded satuan-beli-bb" disabled><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex gap-1"><input type="number" placeholder="Pakai" class="w-1/2 p-1 border rounded qty-pakai-bb" oninput="hitungOtomatis()"><select class="w-1/2 p-1 border rounded satuan-pakai-bb" onchange="hitungOtomatis()"><option value="g">g</option><option value="ml">ml</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-bb">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold ml-1">✕</button></div>`;
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded font-semibold" onchange="pilihMasterBB(this)">${opsi}<option value="manual">+ Input Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bb" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bb" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><select class="w-full p-1 border rounded satuan-beli-bb" disabled><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex gap-1"><input type="number" placeholder="Pakai" class="w-1/2 p-1 border rounded qty-pakai-bb" oninput="hitungOtomatis()"><select class="w-1/2 p-1 border rounded satuan-pakai-bb" onchange="hitungOtomatis()"><option value="g">g</option><option value="ml">ml</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-bb">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
             container.appendChild(div);
         }
 
@@ -413,54 +358,8 @@
             let nama = row.querySelector('.nama-bb'); let harga = row.querySelector('.harga-bb'); let satuanBeli = row.querySelector('.satuan-beli-bb');
             if(val !== "" && val !== "manual") {
                 let data = masterData.bahanBaku[val].data;
-                nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; satuanBeli.value = data[3] || 'kg'; satuanBeli.disabled = true;
-            } else {
-                nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false; satuanBeli.disabled = false;
-            }
-            hitungOtomatis();
-        }
-
-        function tambahBarisOverhead() {
-            let container = document.getElementById('containerOverhead');
-            let div = document.createElement('div');
-            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-oh bg-white p-2 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih Master --</option>`;
-            masterData.overhead.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]} /bln)</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterOH(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Ket" class="w-full p-1 border rounded nama-oh" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Biaya/Bln" class="w-full p-1 border rounded biaya-oh" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><input type="number" value="10" placeholder="Tot Batch" class="w-full p-1 border rounded total-batch-harian" oninput="hitungOtomatis()"></div><div class="sm:col-span-1"><input type="number" value="1" placeholder="Batch Resep" class="w-full p-1 border rounded batch-resep-oh" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-oh">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
-            container.appendChild(div);
-        }
-
-        function pilihMasterOH(sel) {
-            let row = sel.closest('.row-oh'); let val = sel.value;
-            let nama = row.querySelector('.nama-oh'); let biaya = row.querySelector('.biaya-oh');
-            if(val !== "" && val !== "manual") {
-                let data = masterData.overhead[val].data;
-                nama.value = data[0]; nama.disabled = true; biaya.value = data[1]; biaya.disabled = true;
-            } else {
-                nama.value = ""; nama.disabled = false; biaya.value = ""; biaya.disabled = false;
-            }
-            hitungOtomatis();
-        }
-
-        function tambahBarisTenagaKerja() {
-            let container = document.getElementById('containerTenagaKerja');
-            let div = document.createElement('div');
-            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-tk bg-white p-2.5 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih --</option>`;
-            masterData.tenagaKerja.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
-            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterTK(this)">${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Posisi" class="w-full p-1 border rounded nama-tk" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Gaji" class="w-full p-1 border rounded gaji-tk" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-2"><input type="number" value="8" class="w-full p-1 border rounded jam-hari-tk" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Menit" class="w-full p-1 border rounded menit-resep-tk" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between"><span class="font-bold text-primary subtotal-tk">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
-            container.appendChild(div);
-        }
-
-        function pilihMasterTK(sel) {
-            let row = sel.closest('.row-tk'); let val = sel.value;
-            let nama = row.querySelector('.nama-tk'); let gaji = row.querySelector('.gaji-tk'); let jamHari = row.querySelector('.jam-hari-tk');
-            if(val !== "" && val !== "manual") {
-                let data = masterData.tenagaKerja[val].data;
-                nama.value = data[0]; nama.disabled = true; gaji.value = data[1]; gaji.disabled = true; jamHari.value = data[2] || 8; jamHari.disabled = true;
-            } else {
-                nama.value = ""; nama.disabled = false; gaji.value = ""; gaji.disabled = false; jamHari.disabled = false;
-            }
+                nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; satuanBeli.value = (data[3] || 'kg').toLowerCase(); satuanBeli.disabled = true;
+            } else { nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false; satuanBeli.disabled = false; }
             hitungOtomatis();
         }
 
@@ -468,21 +367,35 @@
             let container = document.getElementById('containerBahanPenolong');
             let div = document.createElement('div');
             div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bp bg-white p-2 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih --</option>`;
+            let opsi = `<option value="">-- Pilih Master --</option>`;
             masterData.bahanPenolong.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterBP(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bp" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Qty" class="w-full p-1 border rounded qty-bp" oninput="hitungOtomatis()"></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bp" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1 flex justify-between"><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterBP(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bp" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Qty" class="w-full p-1 border rounded qty-bp" oninput="hitungOtomatis()"></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bp" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
             container.appendChild(div);
         }
 
         function pilihMasterBP(sel) {
             let row = sel.closest('.row-bp'); let val = sel.value;
             let nama = row.querySelector('.nama-bp'); let harga = row.querySelector('.harga-bp');
-            if(val !== "" && val !== "manual") {
-                let data = masterData.bahanPenolong[val].data;
-                nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true;
-            } else {
-                nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false;
-            }
+            if(val !== "" && val !== "manual") { let data = masterData.bahanPenolong[val].data; nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; }
+            else { nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false; }
+            hitungOtomatis();
+        }
+
+        function tambahBarisTenagaKerja() {
+            let container = document.getElementById('containerTenagaKerja');
+            let div = document.createElement('div');
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-tk bg-white p-2.5 rounded-lg border text-xs';
+            let opsi = `<option value="">-- Pilih Karyawan --</option>`;
+            masterData.tenagaKerja.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterTK(this)">${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Posisi" class="w-full p-1 border rounded nama-tk" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Gaji" class="w-full p-1 border rounded gaji-tk" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Jam/Hari" class="w-full p-1 border rounded jam-hari-tk" value="8" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Menit" class="w-full p-1 border rounded menit-resep-tk" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between"><span class="font-bold text-primary subtotal-tk">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            container.appendChild(div);
+        }
+
+        function pilihMasterTK(sel) {
+            let row = sel.closest('.row-tk'); let val = sel.value;
+            let nama = row.querySelector('.nama-tk'); let gaji = row.querySelector('.gaji-tk'); let jamHari = row.querySelector('.jam-hari-tk');
+            if(val !== "" && val !== "manual") { let data = masterData.tenagaKerja[val].data; nama.value = data[0]; nama.disabled = true; gaji.value = data[1]; gaji.disabled = true; jamHari.value = data[2]||8; }
+            else { nama.value = ""; nama.disabled = false; gaji.value = ""; gaji.disabled = false; jamHari.disabled = false; }
             hitungOtomatis();
         }
 
@@ -490,22 +403,17 @@
             let container = document.getElementById('containerAlat');
             let div = document.createElement('div');
             div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-alat bg-white p-2 rounded-lg border text-xs';
-            let opsi = `<option value="">-- Pilih --</option>`;
+            let opsi = `<option value="">-- Pilih Alat --</option>`;
             masterData.alat.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
-            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterAlat(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Alat" class="w-full p-1 border rounded nama-alat" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Residu" class="w-full p-1 border rounded residu-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Bln" class="w-full p-1 border rounded umur-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Susut" class="w-full p-1 border rounded bg-gray-100 susut-alat" readonly></div><div class="sm:col-span-1"><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterAlat(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-alat" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Residu" class="w-full p-1 border rounded residu-alat" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Bln" class="w-full p-1 border rounded umur-alat" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Susut" class="w-full p-1 border rounded bg-gray-100 susut-alat" readonly></div><div class="sm:col-span-1"><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
             container.appendChild(div);
         }
 
         function pilihMasterAlat(sel) {
             let row = sel.closest('.row-alat'); let val = sel.value;
             let nama = row.querySelector('.nama-alat'); let harga = row.querySelector('.harga-alat'); let residu = row.querySelector('.residu-alat'); let umur = row.querySelector('.umur-alat');
-            if(val !== "" && val !== "manual") {
-                let data = masterData.alat[val].data;
-                nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; residu.value = data[3]||0; residu.disabled = true; umur.value = data[4]||12; umur.disabled = true;
-                hitungSusutAlat(harga);
-            } else {
-                nama.value = ""; nama.disabled = false; residu.value = ""; residu.disabled = false; harga.value = ""; harga.disabled = false; umur.value = ""; umur.disabled = false;
-            }
+            if(val !== "" && val !== "manual") { let data = masterData.alat[val].data; nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; residu.value = data[3]||0; residu.disabled = true; umur.value = data[4]||12; umur.disabled = true; hitungSusutAlat(harga); }
+            else { nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false; residu.value = ""; residu.disabled = false; umur.value = ""; umur.disabled = false; }
         }
 
         function hitungSusutAlat(el) {
@@ -518,96 +426,105 @@
             hitungOtomatis();
         }
 
+        function tambahBarisOverhead() {
+            let container = document.getElementById('containerOverhead');
+            let div = document.createElement('div');
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-oh bg-white p-2 rounded-lg border text-xs';
+            let opsi = `<option value="">-- Pilih Overhead --</option>`;
+            masterData.overhead.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterOH(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Keterangan" class="w-full p-1 border rounded nama-oh" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Biaya" class="w-full p-1 border rounded biaya-oh" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><input type="number" value="10" placeholder="TotBatch" class="w-full p-1 border rounded total-batch-harian" oninput="hitungOtomatis()"></div><div class="sm:col-span-1"><input type="number" value="1" placeholder="BatchRsp" class="w-full p-1 border rounded batch-resep-oh" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between"><span class="font-bold text-primary subtotal-oh">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            container.appendChild(div);
+        }
+
+        function pilihMasterOH(sel) {
+            let row = sel.closest('.row-oh'); let val = sel.value;
+            let nama = row.querySelector('.nama-oh'); let biaya = row.querySelector('.biaya-oh');
+            if(val !== "" && val !== "manual") { let data = masterData.overhead[val].data; nama.value = data[0]; nama.disabled = true; biaya.value = data[1]; biaya.disabled = true; }
+            else { nama.value = ""; nama.disabled = false; biaya.value = ""; biaya.disabled = false; }
+            hitungOtomatis();
+        }
+
         function hapusBaris(btn) { btn.closest('div.grid').remove(); hitungOtomatis(); }
 
         function hitungOtomatis() {
             let sumBB = 0;
             document.querySelectorAll('.row-bb').forEach(r => {
-                let hBeli = Number(r.querySelector('.harga-bb').value) || 0;
+                let hargaBeli = Number(r.querySelector('.harga-bb').value) || 0;
                 let sBeli = r.querySelector('.satuan-beli-bb').value;
-                let qPakai = Number(r.querySelector('.qty-pakai-bb').value) || 0;
+                let qtyPakai = Number(r.querySelector('.qty-pakai-bb').value) || 0;
                 let sPakai = r.querySelector('.satuan-pakai-bb').value;
-                let hPakai = (sBeli === 'kg' && sPakai === 'g') ? hBeli / 1000 : (sBeli === 'liter' && sPakai === 'ml') ? hBeli / 1000 : hBeli;
-                let sub = hPakai * qPakai;
-                r.querySelector('.subtotal-bb').innerText = 'Rp ' + Math.round(sub).toLocaleString('id-ID');
-                sumBB += sub;
+                let hargaPerPakai = hargaBeli;
+                if(sBeli === 'kg' && sPakai === 'g') hargaPerPakai = hargaBeli / 1000;
+                else if(sBeli === 'liter' && sPakai === 'ml') hargaPerPakai = hargaBeli / 1000;
+                let subtotal = hargaPerPakai * qtyPakai;
+                r.querySelector('.subtotal-bb').innerText = 'Rp ' + Math.round(subtotal).toLocaleString('id-ID');
+                sumBB += subtotal;
             });
 
-            let sumBP = 0; document.querySelectorAll('.row-bp').forEach(r => sumBP += (Number(r.querySelector('.qty-bp').value) || 0) * (Number(r.querySelector('.harga-bp').value) || 0));
-            let sumTK = 0; document.querySelectorAll('.row-tk').forEach(r => {
-                let g = Number(r.querySelector('.gaji-tk').value) || 0; let jH = Number(r.querySelector('.jam-hari-tk').value) || 8; let mR = Number(r.querySelector('.menit-resep-tk').value) || 0;
-                let sub = (g / (25 * jH * 60)) * mR;
-                r.querySelector('.subtotal-tk').innerText = 'Rp ' + Math.round(sub).toLocaleString('id-ID'); sumTK += sub;
+            let sumBP = 0;
+            document.querySelectorAll('.row-bp').forEach(r => sumBP += (Number(r.querySelector('.qty-bp').value) || 0) * (Number(r.querySelector('.harga-bp').value) || 0));
+
+            let sumTK = 0;
+            document.querySelectorAll('.row-tk').forEach(r => {
+                let gaji = Number(r.querySelector('.gaji-tk').value) || 0;
+                let jamHari = Number(r.querySelector('.jam-hari-tk').value) || 8;
+                let menitResep = Number(r.querySelector('.menit-resep-tk').value) || 0;
+                let subtotalTK = (gaji / (25 * jamHari * 60)) * menitResep;
+                r.querySelector('.subtotal-tk').innerText = 'Rp ' + Math.round(subtotalTK).toLocaleString('id-ID');
+                sumTK += subtotalTK;
             });
 
             let sumSusut = 0; document.querySelectorAll('.susut-alat').forEach(el => sumSusut += Number(el.value) || 0);
-            let sumOH = 0; document.querySelectorAll('.row-oh').forEach(r => {
-                let bBln = Number(r.querySelector('.biaya-oh').value) || 0; let tBH = Number(r.querySelector('.total-batch-harian').value) || 1; let bRes = Number(r.querySelector('.batch-resep-oh').value) || 1;
-                let sub = ((bBln / 30) / tBH) * bRes;
-                r.querySelector('.subtotal-oh').innerText = 'Rp ' + Math.round(sub).toLocaleString('id-ID'); sumOH += sub;
+
+            let sumOH = 0;
+            document.querySelectorAll('.row-oh').forEach(r => {
+                let biaya = Number(r.querySelector('.biaya-oh').value) || 0;
+                let totBatch = Number(r.querySelector('.total-batch-harian').value) || 1;
+                let batchResep = Number(r.querySelector('.batch-resep-oh').value) || 1;
+                let alokasi = ((biaya / 30) / totBatch) * batchResep;
+                r.querySelector('.subtotal-oh').innerText = 'Rp ' + Math.round(alokasi).toLocaleString('id-ID');
+                sumOH += alokasi;
             });
 
             let totalModal = sumBB + sumBP + sumTK + sumSusut + sumOH;
-            let jProd = Number(document.getElementById('jumlahProduksi').value) || 1;
-            let hppUnit = totalModal / jProd;
+            let jumlahProduksi = Number(document.getElementById('jumlahProduksi').value) || 1;
+            let hppPerUnit = totalModal / jumlahProduksi;
             let margin = Number(document.getElementById('targetMargin').value) || 0;
-            let hJualDasar = hppUnit / (1 - (margin / 100));
+            let hargaJualDasar = hppPerUnit / (1 - (margin / 100));
 
-            let configs = [
+            let platformsConfig = [
                 { id: 'Offline', komisi: 0, diskon: Number(document.getElementById('diskonOffline').value)||0, promo: Number(document.getElementById('promoOffline').value)||0, biayaTetap: 0 },
                 { id: 'GoFood', komisi: Number(document.getElementById('komisiGoFood').value)||0, diskon: Number(document.getElementById('diskonGoFood').value)||0, promo: Number(document.getElementById('promoGoFood').value)||0, biayaTetap: Number(document.getElementById('biayaTetapGoFood').value)||0 },
                 { id: 'GrabFood', komisi: Number(document.getElementById('komisiGrabFood').value)||0, diskon: Number(document.getElementById('diskonGrabFood').value)||0, promo: Number(document.getElementById('promoGrabFood').value)||0, biayaTetap: Number(document.getElementById('biayaTetapGrabFood').value)||0 },
                 { id: 'ShopeeFood', komisi: Number(document.getElementById('komisiShopeeFood').value)||0, diskon: Number(document.getElementById('diskonShopeeFood').value)||0, promo: Number(document.getElementById('promoShopeeFood').value)||0, biayaTetap: Number(document.getElementById('biayaTetapShopeeFood').value)||0 }
             ];
 
-            cacheHitung = { totalModal: totalModal, hppPerUnit: hppUnit, hargaJualDasar: hJualDasar, configs: configs };
+            cacheHitung = { totalModal: totalModal, hppPerUnit: hppPerUnit, hargaJualDasar: hargaJualDasar, configs: platformsConfig };
 
             document.getElementById('resTotalBB').innerText = 'Rp ' + Math.round(sumBB).toLocaleString('id-ID');
             document.getElementById('resTotalBP').innerText = 'Rp ' + Math.round(sumBP).toLocaleString('id-ID');
             document.getElementById('resTotalTK').innerText = 'Rp ' + Math.round(sumTK).toLocaleString('id-ID');
             document.getElementById('resTotalOH').innerText = 'Rp ' + Math.round(sumSusut + sumOH).toLocaleString('id-ID');
             document.getElementById('resTotalModal').innerText = 'Rp ' + Math.round(totalModal).toLocaleString('id-ID');
-            document.getElementById('resHppUnit').innerText = 'Rp ' + Math.round(hppUnit).toLocaleString('id-ID');
+            document.getElementById('resHppUnit').innerText = 'Rp ' + Math.round(hppPerUnit).toLocaleString('id-ID');
 
-            renderPlatformList(hJualDasar, configs);
+            renderPerbandinganPlatform(hargaJualDasar, platformsConfig);
         }
 
-        function renderPlatformList(hDasar, configs) {
-            let container = document.getElementById('listPerbandinganPlatform'); let html = '';
+        function renderPerbandinganPlatform(hargaDasar, configs) {
+            let container = document.getElementById('listPerbandinganPlatform');
             let label = { 'Offline': 'OFFLINE', 'GoFood': 'GoFood', 'GrabFood': 'GrabFood', 'ShopeeFood': 'ShopeeFood' };
-            configs.forEach(c => {
-                let pot = c.komisi + c.diskon + c.promo;
-                let fp = pot < 100 ? (hDasar + c.biayaTetap) / (1 - (pot / 100)) : hDasar + c.biayaTetap;
-                html += `<div class="bg-gray-50 border p-3 rounded-xl flex flex-col justify-between"><span class="font-bold text-gray-700">${label[c.id]}</span><span class="text-primary font-extrabold text-sm">Rp ${Math.round(fp).toLocaleString('id-ID')}</span></div>`;
+            let html = '';
+            configs.forEach(cfg => {
+                let pot = cfg.komisi + cfg.diskon + cfg.promo;
+                let finalPrice = pot < 100 ? (hargaDasar + cfg.biayaTetap) / (1 - (pot / 100)) : hargaDasar + cfg.biayaTetap;
+                html += `<div class="bg-gray-50 border p-3 rounded-xl flex flex-col justify-between shadow-sm space-y-1"><span class="font-bold text-gray-700">${label[cfg.id]}</span><span class="text-primary font-extrabold text-sm mt-1">Rp ${Math.round(finalPrice).toLocaleString('id-ID')}</span></div>`;
             });
             container.innerHTML = html;
         }
 
-        // EXPORT PDF & EXCEL DARI FORM AKTIF
-        function extractDataFormAktif() {
-            let nama = document.getElementById('namaProduk').value || "Resep";
-            let batch = document.getElementById('jumlahProduksi').value || 1;
-            let rincian = [];
-            document.querySelectorAll('.row-bb').forEach(r => { let n=r.querySelector('.nama-bb').value; let q=r.querySelector('.qty-pakai-bb').value; let p=r.querySelector('.subtotal-bb').innerText.replace('Rp ','').replace(/\./g,''); if(n) rincian.push(['Bahan Baku', n, q, Number(p)]); });
-            return { nama: nama, batch: batch, rincian: rincian, totalModal: cacheHitung.totalModal, hpp: cacheHitung.hppPerUnit, platforms: cacheHitung.configs, hargaDasar: cacheHitung.hargaJualDasar };
-        }
-
-        function unduhPDFFormAktif() {
-            let data = extractDataFormAktif();
-            let tpl = `<div style="padding:20px; font-family:Arial;"><h2>HPP: ${data.nama}</h2><p>HPP / Porsi: Rp ${Math.round(data.hpp).toLocaleString('id-ID')}</p></div>`;
-            let opt = { margin: 0.5, filename: `HPP_${data.nama}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-            let el = document.createElement('div'); el.innerHTML = tpl; html2pdf().set(opt).from(el).save();
-        }
-
-        function unduhExcelFormAktif() {
-            let data = extractDataFormAktif();
-            let ws = XLSX.utils.aoa_to_sheet([['Nama Resep', data.nama], ['HPP / Unit', Math.round(data.hpp)]]);
-            let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "HPP");
-            XLSX.writeFile(wb, `HPP_${data.nama}.xlsx`);
-        }
-
-        // DATABASE ACTIONS (API FETCH)
         async function simpanMasterManual(kategori) {
+            if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { alert('Akses ditolak!'); return; }
             let payload = {};
             if(kategori === 'bahanBaku') {
                 payload = { id: document.getElementById('editMasterIdBB').value, nama: document.getElementById('mNamaBB').value, harga: document.getElementById('mHargaBB').value, qty: document.getElementById('mQtyBB').value, satuan: document.getElementById('mSatuanBB').value };
@@ -620,116 +537,184 @@
             } else if(kategori === 'overhead') {
                 payload = { id: document.getElementById('editMasterIdOH').value, nama: document.getElementById('mNamaOH').value, biaya: document.getElementById('mBiayaOH').value, qty: document.getElementById('mQtyOH').value };
             }
+            if(!payload.nama) { alert('Nama wajib diisi!'); return; }
             let res = await fetchAPI('simpanKeMaster', { kategori: kategori, obj: payload });
             if(res && res.success) { alert(res.message); resetFormMaster(kategori); ambilMasterDanInisialisasi(); }
         }
 
-        function resetFormMaster(k) {
-            if(k==='bahanBaku') { document.getElementById('editMasterIdBB').value=''; document.getElementById('mNamaBB').value=''; document.getElementById('mHargaBB').value=''; }
-            else if(k==='bahanPenolong') { document.getElementById('editMasterIdBP').value=''; document.getElementById('mNamaBP').value=''; document.getElementById('mHargaBP').value=''; }
-            else if(k==='tenagaKerja') { document.getElementById('editMasterIdTK').value=''; document.getElementById('mNamaTK').value=''; document.getElementById('mGajiTK').value=''; }
-            else if(k==='alat') { document.getElementById('editMasterIdAlat').value=''; document.getElementById('mNamaAlat').value=''; document.getElementById('mHargaAlat').value=''; }
-            else if(k==='overhead') { document.getElementById('editMasterIdOH').value=''; document.getElementById('mNamaOH').value=''; document.getElementById('mBiayaOH').value=''; }
+        function resetFormMaster(kategori) {
+            if(kategori === 'bahanBaku') { document.getElementById('editMasterIdBB').value = ''; document.getElementById('mNamaBB').value = ''; document.getElementById('mHargaBB').value = ''; }
+            else if(kategori === 'bahanPenolong') { document.getElementById('editMasterIdBP').value = ''; document.getElementById('mNamaBP').value = ''; document.getElementById('mHargaBP').value = ''; }
+            else if(kategori === 'tenagaKerja') { document.getElementById('editMasterIdTK').value = ''; document.getElementById('mNamaTK').value = ''; document.getElementById('mGajiTK').value = ''; }
+            else if(kategori === 'alat') { document.getElementById('editMasterIdAlat').value = ''; document.getElementById('mNamaAlat').value = ''; document.getElementById('mHargaAlat').value = ''; }
+            else if(kategori === 'overhead') { document.getElementById('editMasterIdOH').value = ''; document.getElementById('mNamaOH').value = ''; document.getElementById('mBiayaOH').value = ''; }
+        }
+
+        function editMasterItem(kategori, idx) {
+            let item = masterData[kategori][idx];
+            if(!item) return;
+            if(kategori === 'bahanBaku') {
+                document.getElementById('editMasterIdBB').value = item.id; document.getElementById('mNamaBB').value = item.data[0]; document.getElementById('mHargaBB').value = item.data[1]; document.getElementById('mQtyBB').value = item.data[2]||1; document.getElementById('mSatuanBB').value = item.data[3]||'kg';
+            } else if(kategori === 'bahanPenolong') {
+                document.getElementById('editMasterIdBP').value = item.id; document.getElementById('mNamaBP').value = item.data[0]; document.getElementById('mHargaBP').value = item.data[1]; document.getElementById('mQtyBP').value = item.data[2]||1; document.getElementById('mSatuanBP').value = item.data[3]||'pcs';
+            } else if(kategori === 'tenagaKerja') {
+                document.getElementById('editMasterIdTK').value = item.id; document.getElementById('mNamaTK').value = item.data[0]; document.getElementById('mGajiTK').value = item.data[1]; document.getElementById('mJamTK').value = item.data[2]||8;
+            } else if(kategori === 'alat') {
+                document.getElementById('editMasterIdAlat').value = item.id; document.getElementById('mNamaAlat').value = item.data[0]; document.getElementById('mHargaAlat').value = item.data[1]; document.getElementById('mQtyAlat').value = item.data[2]||1; document.getElementById('mResiduAlat').value = item.data[3]||0; document.getElementById('mUmurAlat').value = item.data[4]||12;
+            } else if(kategori === 'overhead') {
+                document.getElementById('editMasterIdOH').value = item.id; document.getElementById('mNamaOH').value = item.data[0]; document.getElementById('mBiayaOH').value = item.data[1]; document.getElementById('mQtyOH').value = item.data[2]||1;
+            }
         }
 
         function renderTabelMasterDataKategori() {
             ['BB', 'BP', 'TK', 'Alat', 'OH'].forEach(k => {
-                let keyMap = { BB: 'bahanBaku', BP: 'bahanPenolong', TK: 'tenagaKerja', Alat: 'alat', OH: 'overhead' };
+                let key = k === 'BB' ? 'bahanBaku' : k === 'BP' ? 'bahanPenolong' : k === 'TK' ? 'tenagaKerja' : k === 'Alat' ? 'alat' : 'overhead';
                 let tbody = document.getElementById('tabelMaster' + k);
-                let list = masterData[keyMap[k]] || [];
+                let list = masterData[key];
+                if(!list || list.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="p-3 text-center text-gray-400">Belum ada data.</td></tr>`; return; }
                 let html = '';
                 list.forEach((item, idx) => {
-                    html += `<tr class="hover:bg-gray-50"><td class="p-3">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3 text-center"><button onclick="editMasterItem('${keyMap[k]}', ${idx})" class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Edit</button> <button onclick="hapusMasterItem('${keyMap[k]}', '${item.id}')" class="bg-red-100 text-red-800 px-2 py-1 rounded">Hapus</button></td></tr>`;
+                    if(k === 'BB' || k === 'BP') {
+                        html += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3">${item.data[2]||1}</td><td class="p-3">${item.data[3]||'-'}</td><td class="p-3 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button></td></tr>`;
+                    } else if(k === 'TK') {
+                        html += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3">${item.data[2]} Jam/Hari</td><td class="p-3 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button></td></tr>`;
+                    } else if(k === 'Alat') {
+                        html += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3">${item.data[2]||1} Unit</td><td class="p-3">Rp ${Number(item.data[3]||0).toLocaleString('id-ID')}</td><td class="p-3">${item.data[4]||12} Bln</td><td class="p-3 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button></td></tr>`;
+                    } else if(k === 'OH') {
+                        html += `<tr class="border-b hover:bg-gray-50"><td class="p-3 font-semibold">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')} /bln</td><td class="p-3">${item.data[2]||1} Pemakaian</td><td class="p-3 text-center space-x-1"><button onclick="editMasterItem('${key}', ${idx})" class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-1 rounded font-bold">Edit</button><button onclick="hapusMasterItem('${key}', '${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button></td></tr>`;
+                    }
                 });
-                tbody.innerHTML = html || `<tr><td colspan="5" class="p-3 text-center text-gray-400">Kosong</td></tr>`;
+                tbody.innerHTML = html;
             });
         }
 
-        function editMasterItem(cat, idx) {
-            let item = masterData[cat][idx];
-            bukaMasterPanel('master-' + (cat==='bahanBaku'?'bb':cat==='bahanPenolong'?'bp':cat==='tenagaKerja'?'tk':cat==='alat'?'alat':'oh'));
-            if(cat==='bahanBaku') { document.getElementById('editMasterIdBB').value=item.id; document.getElementById('mNamaBB').value=item.data[0]; document.getElementById('mHargaBB').value=item.data[1]; }
-            else if(cat==='bahanPenolong') { document.getElementById('editMasterIdBP').value=item.id; document.getElementById('mNamaBP').value=item.data[0]; document.getElementById('mHargaBP').value=item.data[1]; }
-            else if(cat==='tenagaKerja') { document.getElementById('editMasterIdTK').value=item.id; document.getElementById('mNamaTK').value=item.data[0]; document.getElementById('mGajiTK').value=item.data[1]; }
-            else if(cat==='alat') { document.getElementById('editMasterIdAlat').value=item.id; document.getElementById('mNamaAlat').value=item.data[0]; document.getElementById('mHargaAlat').value=item.data[1]; }
-            else if(cat==='overhead') { document.getElementById('editMasterIdOH').value=item.id; document.getElementById('mNamaOH').value=item.data[0]; document.getElementById('mBiayaOH').value=item.data[1]; }
-        }
-
         async function kirimData() {
-            let payload = {
-                id: document.getElementById('editResepId').value,
-                namaProduk: document.getElementById('namaProduk').value,
-                jumlahProduksi: Number(document.getElementById('jumlahProduksi').value),
-                hppPerUnit: cacheHitung.hppPerUnit,
-                hargaJualDasar: cacheHitung.hargaJualDasar,
-                targetMargin: Number(document.getElementById('targetMargin').value),
-                visibilitasStaff: document.getElementById('visibilitasStaff').value,
-                rincianJSON: "{}"
+            if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { alert('Akses Ditolak!'); return; }
+            let namaProduk = document.getElementById('namaProduk').value; let jumlahProduksi = document.getElementById('jumlahProduksi').value;
+            if(!namaProduk || !jumlahProduksi) { alert('Isi Nama Produk dan Jumlah Produksi!'); return; }
+
+            let rincianBB = []; document.querySelectorAll('.row-bb').forEach(r => { let nm=r.querySelector('.nama-bb').value; if(nm) rincianBB.push({ nama: nm, hargaBeli: r.querySelector('.harga-bb').value, sBeli: r.querySelector('.satuan-beli-bb').value, qty: r.querySelector('.qty-pakai-bb').value, sPakai: r.querySelector('.satuan-pakai-bb').value }); });
+            let rincianBP = []; document.querySelectorAll('.row-bp').forEach(r => { let nm=r.querySelector('.nama-bp').value; if(nm) rincianBP.push({ nama: nm, qty: r.querySelector('.qty-bp').value, harga: r.querySelector('.harga-bp').value }); });
+            let rincianTK = []; document.querySelectorAll('.row-tk').forEach(r => { let nm=r.querySelector('.nama-tk').value; if(nm) rincianTK.push({ nama: nm, gaji: r.querySelector('.gaji-tk').value, jamHari: r.querySelector('.jam-hari-tk').value, menitResep: r.querySelector('.menit-resep-tk').value }); });
+            let rincianAlat = []; document.querySelectorAll('.row-alat').forEach(r => { let nm=r.querySelector('.nama-alat').value; if(nm) rincianAlat.push({ nama: nm, harga: r.querySelector('.harga-alat').value, residu: r.querySelector('.residu-alat').value, umur: r.querySelector('.umur-alat').value }); });
+            let rincianOH = []; document.querySelectorAll('.row-oh').forEach(r => { let nm=r.querySelector('.nama-oh').value; if(nm) rincianOH.push({ nama: nm, biaya: r.querySelector('.biaya-oh').value, totBatchHarian: r.querySelector('.total-batch-harian').value, batchResep: r.querySelector('.batch-resep-oh').value }); });
+
+            let payloadData = {
+                id: document.getElementById('editResepId').value, namaProduk: namaProduk, jumlahProduksi: Number(jumlahProduksi), hppPerUnit: cacheHitung.hppPerUnit, hargaJualDasar: cacheHitung.hargaJualDasar,
+                targetMargin: Number(document.getElementById('targetMargin').value), visibilitasStaff: document.getElementById('visibilitasStaff').value,
+                rincianJSON: JSON.stringify({ bb: rincianBB, bp: rincianBP, tk: rincianTK, alat: rincianAlat, oh: rincianOH })
             };
-            let res = await fetchAPI('simpanDanHitungData', payload);
+
+            let res = await fetchAPI('simpanDanHitungData', payloadData);
             if(res && res.success) { alert(res.message); gantiTab('daftar'); }
         }
 
         async function muatDaftarResep() {
-            let tbody = document.getElementById('tabelResepBody');
+            let tbody = document.getElementById('tabelResepBody'); tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Memuat data...</td></tr>`;
             let data = await fetchAPI('ambilDaftarResep', { userRole: currentUserRole });
+            if(!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Belum ada resep tersimpan.</td></tr>`; return; }
             let html = '';
-            if(data) {
-                data.forEach(item => {
-                    html += `<tr><td class="p-3 font-semibold">${item.namaProduk}</td><td class="p-3">Rp ${Math.round(item.hppPerUnit).toLocaleString('id-ID')}</td><td class="p-3 text-center"><button onclick="bukaResepLengkap('${item.id}')" class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Buka</button> <button onclick="hapusResep('${item.id}')" class="bg-red-100 text-red-800 px-2 py-1 rounded">Hapus</button></td><td class="p-3 text-center"><button onclick="unduhPDFDariList('${item.id}')" class="bg-red-600 text-white px-2 py-1 rounded">PDF</button> <button onclick="unduhExcelDariList('${item.id}')" class="bg-green-600 text-white px-2 py-1 rounded">Excel</button></td></tr>`;
-                });
-            }
-            tbody.innerHTML = html || `<tr><td colspan="5" class="p-3 text-center text-gray-400">Belum ada resep.</td></tr>`;
+            data.forEach(item => {
+                let st = item.visibilitasStaff === 'kunci' ? `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px]">🔒 Kunci</span>` : `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]">🔓 Buka</span>`;
+                html += `<tr class="border-b hover:bg-gray-50">
+                    <td class="p-3 font-semibold text-primary">${item.namaProduk}</td>
+                    <td class="p-3 font-bold text-blue-800">Rp ${Math.round(item.hppPerUnit).toLocaleString('id-ID')}</td>
+                    <td class="p-3">${st}</td>
+                    <td class="p-3 text-center space-x-1"><button onclick="bukaResepLengkap('${item.id}')" class="text-[10px] bg-blue-100 text-primary px-2 py-1 rounded font-bold">Lihat/Edit</button> ${currentUserRole === 'admin' || currentUserRole === 'owner' ? `<button onclick="hapusResep('${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button>` : ``}</td>
+                    <td class="p-3 text-center space-x-1"><button onclick="unduhPDFDariList('${item.id}')" class="text-[10px] bg-red-600 text-white px-2 py-1 rounded font-bold">📄 PDF</button> <button onclick="unduhExcelDariList('${item.id}')" class="text-[10px] bg-green-600 text-white px-2 py-1 rounded font-bold">📊 Excel</button></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
         }
 
         async function bukaResepLengkap(id) {
             let item = await fetchAPI('ambilDetailResepById', { id: id });
-            if(item) {
-                gantiTab('form'); kosongkanForm();
-                document.getElementById('editResepId').value = item.id;
-                document.getElementById('namaProduk').value = item.namaProduk;
-                document.getElementById('jumlahProduksi').value = item.jumlahProduksi;
-                document.getElementById('targetMargin').value = item.targetMargin;
-                hitungOtomatis();
-            }
+            if(!item) { alert('Data resep tidak ditemukan!'); return; }
+            gantiTab('form'); kosongkanForm();
+            document.getElementById('editResepId').value = item.id; document.getElementById('namaProduk').value = item.namaProduk; document.getElementById('jumlahProduksi').value = item.jumlahProduksi; document.getElementById('targetMargin').value = item.targetMargin; document.getElementById('visibilitasStaff').value = item.visibilitasStaff || 'buka';
+
+            let json = JSON.parse(item.rincianJSON || '{}');
+            if(json.bb) { json.bb.forEach(b => { tambahBarisBahanBaku(); let rows = document.querySelectorAll('.row-bb'); let r = rows[rows.length - 1]; r.querySelector('.nama-bb').value = b.nama; r.querySelector('.nama-bb').disabled = false; r.querySelector('.harga-bb').value = b.hargaBeli; r.querySelector('.harga-bb').disabled = false; r.querySelector('.satuan-beli-bb').value = b.sBeli; r.querySelector('.satuan-beli-bb').disabled = false; r.querySelector('.qty-pakai-bb').value = b.qty; r.querySelector('.satuan-pakai-bb').value = b.sPakai; }); }
+            if(json.bp) { json.bp.forEach(b => { tambahBarisBahanPenolong(); let rows = document.querySelectorAll('.row-bp'); let r = rows[rows.length - 1]; r.querySelector('.nama-bp').value = b.nama; r.querySelector('.nama-bp').disabled = false; r.querySelector('.harga-bp').value = b.harga; r.querySelector('.harga-bp').disabled = false; r.querySelector('.qty-bp').value = b.qty; }); }
+            if(json.tk) { json.tk.forEach(t => { tambahBarisTenagaKerja(); let rows = document.querySelectorAll('.row-tk'); let r = rows[rows.length - 1]; r.querySelector('.nama-tk').value = t.nama; r.querySelector('.nama-tk').disabled = false; r.querySelector('.gaji-tk').value = t.gaji; r.querySelector('.gaji-tk').disabled = false; r.querySelector('.jam-hari-tk').value = t.jamHari; r.querySelector('.menit-resep-tk').value = t.menitResep; }); }
+            if(json.alat) { json.alat.forEach(a => { tambahBarisAlat(); let rows = document.querySelectorAll('.row-alat'); let r = rows[rows.length - 1]; r.querySelector('.nama-alat').value = a.nama; r.querySelector('.nama-alat').disabled = false; r.querySelector('.harga-alat').value = a.harga; r.querySelector('.harga-alat').disabled = false; r.querySelector('.residu-alat').value = a.residu; r.querySelector('.umur-alat').value = a.umur; hitungSusutAlat(r.querySelector('.harga-alat')); }); }
+            if(json.oh) { json.oh.forEach(o => { tambahBarisOverhead(); let rows = document.querySelectorAll('.row-oh'); let r = rows[rows.length - 1]; r.querySelector('.nama-oh').value = o.nama; r.querySelector('.nama-oh').disabled = false; r.querySelector('.biaya-oh').value = o.biaya; r.querySelector('.biaya-oh').disabled = false; if(o.totBatchHarian) r.querySelector('.total-batch-harian').value = o.totBatchHarian; if(o.batchResep) r.querySelector('.batch-resep-oh').value = o.batchResep; }); }
+
+            if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { document.querySelectorAll('#sectionForm input, #sectionForm select').forEach(el => el.disabled = true); document.getElementById('btnSimpanDatabase').classList.add('hidden'); } else { document.getElementById('btnSimpanDatabase').classList.remove('hidden'); }
+            hitungOtomatis();
         }
 
         async function hapusResep(id) {
-            if(confirm('Hapus resep?')) { await fetchAPI('hapusResep', { id: id, userRole: currentUserRole }); muatDaftarResep(); }
+            if(confirm('Hapus resep ini?')) { 
+                let res = await fetchAPI('hapusResep', { id: id, userRole: currentUserRole });
+                if(res && res.success) { alert(res.message); muatDaftarResep(); }
+            }
         }
 
-        async function hapusMasterItem(kat, id) {
-            if(confirm('Hapus master item?')) { await fetchAPI('hapusMasterItem', { kategori: kat, id: id, userRole: currentUserRole }); ambilMasterDanInisialisasi(); }
+        async function hapusMasterItem(kategori, id) {
+            if(confirm('Hapus item master data ini?')) { 
+                let res = await fetchAPI('hapusMasterItem', { kategori: kategori, id: id, userRole: currentUserRole });
+                if(res && res.success) { alert(res.message); ambilMasterDanInisialisasi(); }
+            }
         }
 
-        async function parseDataResepUntukExport(item) {
-            let json = JSON.parse(item.rincianJSON || '{}');
-            return { nama: item.namaProduk, batch: item.jumlahProduksi, hpp: item.hppPerUnit, hargaDasar: item.hargaJualDasar, rincian: [] };
+        // FUNGSI PARSING & EXPORT PDF/EXCEL YANG TELAH DIPERBAIKI
+        function parseDataResepUntukExport(item) {
+            let rincian = [];
+            let json = {};
+            try { json = JSON.parse(item.rincianJSON || '{}'); } catch (e) { console.error(e); }
+            
+            if(json.bb) json.bb.forEach(b => rincian.push(['Bahan Baku', b.nama||'-', b.qty||0, b.sPakai||b.sBeli||'-', (Number(b.hargaBeli)||0)*(Number(b.qty)||0)]));
+            if(json.bp) json.bp.forEach(b => rincian.push(['Bahan Penolong', b.nama||'-', b.qty||0, 'pcs', (Number(b.harga)||0)*(Number(b.qty)||0)]));
+            if(json.tk) json.tk.forEach(t => {
+                let subTK = ((Number(t.gaji)||0) / (25 * (Number(t.jamHari)||8) * 60)) * (Number(t.menitResep)||0);
+                rincian.push(['Tenaga Kerja', t.nama||'-', t.menitResep||0, 'menit', Math.round(subTK)]);
+            });
+            if(json.alat) json.alat.forEach(a => {
+                let susut = ((Number(a.harga)||0) - (Number(a.residu)||0)) / (Number(a.umur)||12) / 30;
+                rincian.push(['Penyusutan Alat', a.nama||'-', '1', 'unit', Math.round(susut)]);
+            });
+            if(json.oh) json.oh.forEach(o => {
+                let alokasi = ((Number(o.biaya)||0) / 30 / (Number(o.totBatchHarian)||1)) * (Number(o.batchResep)||1);
+                rincian.push(['Overhead', o.nama||'-', (o.batchResep||1)+' batch', 'alokasi', Math.round(alokasi)]);
+            });
+
+            return { nama: item.namaProduk||'Tanpa Nama', batch: item.jumlahProduksi||1, hpp: item.hppPerUnit||0, hargaDasar: item.hargaJualDasar||0, rincian: rincian };
         }
 
         async function unduhPDFDariList(id) {
+            alert('Mempersiapkan PDF... Mohon tunggu.');
             let item = await fetchAPI('ambilDetailResepById', { id: id });
             if(item) {
-                let d = await parseDataResepUntukExport(item);
-                let tpl = `<div style="padding:20px;"><h2>Resep: ${d.nama}</h2><p>HPP: Rp ${Math.round(d.hpp).toLocaleString('id-ID')}</p></div>`;
-                let opt = { margin: 0.5, filename: `HPP_${d.nama}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+                let dataExport = parseDataResepUntukExport(item);
+                let trRows = '';
+                if(dataExport.rincian.length === 0) { trRows = `<tr><td colspan="4" style="text-align: center; padding: 10px;">Tidak ada rincian komponen biaya.</td></tr>`; }
+                else {
+                    dataExport.rincian.forEach(r => { 
+                        trRows += `<tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 4px;">${r[0]}</td><td style="padding: 6px 4px;">${r[1]}</td><td style="padding: 6px 4px; text-align: center;">${r[2]} ${r[3]}</td><td style="padding: 6px 4px; text-align: right;">Rp ${Number(r[4]).toLocaleString('id-ID')}</td></tr>`; 
+                    });
+                }
+                let tpl = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;"><h1 style="color: #1B365D; border-bottom: 2px solid #1B365D; padding-bottom: 10px; margin-bottom: 20px;">Rincian HPP Resep</h1><table style="width: 100%; margin-bottom: 20px; font-size: 14px;"><tr><td style="font-weight: bold; width: 150px;">Nama Resep:</td><td>${dataExport.nama}</td></tr><tr><td style="font-weight: bold;">Jumlah Produksi:</td><td>${dataExport.batch} Porsi/Batch</td></tr><tr><td style="font-weight: bold;">HPP / Porsi:</td><td>Rp ${Math.round(dataExport.hpp).toLocaleString('id-ID')}</td></tr><tr><td style="font-weight: bold;">Harga Jual Dasar:</td><td>Rp ${Math.round(dataExport.hargaDasar).toLocaleString('id-ID')}</td></tr></table><h3 style="background-color: #EAEFF5; padding: 8px; font-size: 14px;">Breakdown Komposisi Item Biaya</h3><table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;"><tr style="background-color: #1B365D; color: white;"><th style="padding: 8px 4px; text-align: left;">Kategori</th><th style="padding: 8px 4px; text-align: left;">Nama Item</th><th style="padding: 8px 4px; text-align: center;">Kuantitas</th><th style="padding: 8px 4px; text-align: right;">Biaya (Rp)</th></tr>${trRows}</table><p style="margin-top: 40px; font-size: 10px; color: #888; text-align: center;">Dokumen HPP dicetak dari Sistem Internal.</p></div>`;
+                let opt = { margin: 0.5, filename: `HPP_${dataExport.nama.replace(/\s+/g,'_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
                 let el = document.createElement('div'); el.innerHTML = tpl; html2pdf().set(opt).from(el).save();
             }
         }
 
         async function unduhExcelDariList(id) {
+            alert('Mempersiapkan Excel... Mohon tunggu.');
             let item = await fetchAPI('ambilDetailResepById', { id: id });
             if(item) {
-                let d = await parseDataResepUntukExport(item);
-                let ws = XLSX.utils.aoa_to_sheet([['Nama Resep', d.nama], ['HPP / Unit', Math.round(d.hpp)]]);
-                let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "HPP");
-                XLSX.writeFile(wb, `HPP_${d.nama}.xlsx`);
+                let dataExport = parseDataResepUntukExport(item);
+                let arr = [['INFORMASI RESEP'], ['Nama Resep', dataExport.nama], ['Jumlah Produksi', dataExport.batch + ' Porsi'], ['HPP / Unit', Math.round(dataExport.hpp)], ['Harga Jual Dasar', Math.round(dataExport.hargaDasar)], [], ['Kategori', 'Nama Item', 'Kuantitas Pakai', 'Satuan', 'Total Biaya (Rp)']];
+                if(dataExport.rincian.length > 0) dataExport.rincian.forEach(r => arr.push([r[0], r[1], r[2], r[3], r[4]]));
+                let ws = XLSX.utils.aoa_to_sheet(arr); let wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Rincian HPP"); XLSX.writeFile(wb, `HPP_${dataExport.nama.replace(/\s+/g,'_')}.xlsx`);
             }
         }
 
         function initAplikasi() {
-            let u = localStorage.getItem('hpp_user'); let p = localStorage.getItem('hpp_pass');
-            if(u && p) { document.getElementById('loginUser').value = u; document.getElementById('loginPass').value = p; document.getElementById('rememberMe').checked = true; prosesLogin(); }
+            let savedUser = localStorage.getItem('hpp_user'); let savedPass = localStorage.getItem('hpp_pass');
+            if (savedUser && savedPass) { document.getElementById('loginUser').value = savedUser; document.getElementById('loginPass').value = savedPass; document.getElementById('rememberMe').checked = true; prosesLogin(); }
         }
     </script>
 </body>
