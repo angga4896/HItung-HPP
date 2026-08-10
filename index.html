@@ -1,213 +1,736 @@
-<!-- ... (Seluruh struktur HTML dan UI Anda dari jawaban sebelumnya tetap sama persis di sini) ... -->
-
-<script>
-    // ⚠️ PASTE URL API GOOGLE APPS SCRIPT ANDA DI SINI
-    const API_URL = "https://script.google.com/macros/s/AKfycbym3wcaaq8CQ7maMYEWXSv_pmNBT52bA7TwIzOo0FNDZSx54EysvFJOO5kgissOzSvFkw/exec";
-    
-    let currentUserRole = "";
-    let masterData = { bahanBaku: [], bahanPenolong: [], tenagaKerja: [], alat: [], overhead: [] };
-    let cacheHitung = {};
-    let deferredPrompt = null;
-
-    /* ==============================================================
-       FUNGSI PENGHUBUNG KE BACKEND (API FETCH)
-       ============================================================== */
-    async function fetchAPI(action, payload = {}) {
-        try {
-            // Kita menggunakan text/plain agar tidak terkena error CORS Preflight dari browser
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action: action, payload: payload })
-            });
-            const result = await response.json();
-            if (result.status === 'success') {
-                return result.data;
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            console.error("API Error:", error);
-            alert("Gagal terhubung ke database: " + error.message);
-            return null;
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator HPP & Manajemen Resep F&B</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { primary: '#1B365D', primaryHover: '#142845', accent: '#EAEFF5' } } }
         }
-    }
+    </script>
+    <!-- Library Export Excel & PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="manifest.json">
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen p-4 sm:p-6" onload="initAplikasi()">
 
-    /* ==============================================================
-       MODIFIKASI CRUD DENGAN ASYNC / AWAIT
-       ============================================================== */
-    
-    async function prosesLogin() {
-        let u = document.getElementById('loginUser').value;
-        let p = document.getElementById('loginPass').value;
-        let remember = document.getElementById('rememberMe').checked;
-        
-        let btn = document.querySelector('#loginModal button');
-        btn.innerText = "Loading..."; btn.disabled = true;
+    <!-- LOGIN MODAL -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h2 class="text-xl font-bold text-primary text-center">Login Sistem HPP & Master Data</h2>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Username</label>
+                <input type="text" id="loginUser" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:outline-none" placeholder="owner / staff">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Password</label>
+                <div class="relative">
+                    <input type="password" id="loginPass" class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:outline-none pr-10" placeholder="password...">
+                    <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2 top-2 text-xs text-gray-500 hover:text-primary">👁️</button>
+                </div>
+            </div>
+            <div class="flex items-center justify-between text-xs text-gray-600">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" id="rememberMe" class="rounded border-gray-300 text-primary focus:ring-primary">
+                    <span>Ingat saya di perangkat ini</span>
+                </label>
+            </div>
+            <button onclick="prosesLogin()" class="w-full bg-primary text-white font-bold py-2.5 rounded-lg hover:bg-primaryHover transition">Masuk</button>
+        </div>
+    </div>
 
-        let res = await fetchAPI('prosesLogin', { username: u, password: p });
-        
-        btn.innerText = "Masuk"; btn.disabled = false;
+    <!-- MAIN APP -->
+    <div id="appContent" class="max-w-5xl mx-auto bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 hidden">
+        <div class="bg-primary text-white p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-xl sm:text-2xl font-bold">Kalkulator HPP & Manajemen Resep F&B</h1>
+                <p class="text-blue-100 text-xs mt-1">Login Sebagai: <span id="labelRoleUser" class="font-bold underline"></span></p>
+            </div>
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button id="btnInstallPWA" onclick="installAppPWA()" class="hidden text-xs bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-2 rounded-lg transition flex items-center gap-1">📲 Instal Aplikasi</button>
+                <button onclick="logoutApp()" class="text-xs bg-blue-900 text-white px-3 py-2 rounded-lg hover:bg-blue-950">Ganti Akun</button>
+            </div>
+        </div>
 
-        if(res && res.success) {
-            currentUserRole = res.role.toLowerCase();
-            document.getElementById('labelRoleUser').innerText = u + " (" + currentUserRole.toUpperCase() + ")";
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('appContent').classList.remove('hidden');
+        <!-- NAVIGASI TAB -->
+        <div class="flex border-b bg-gray-100 text-sm font-semibold overflow-x-auto">
+            <button onclick="gantiTab('form')" id="tabBtnForm" class="flex-1 py-3 px-4 text-center border-b-2 border-primary text-primary bg-white whitespace-nowrap">Kalkulasi & Resep</button>
+            <button onclick="gantiTab('daftar')" id="tabBtnDaftar" class="flex-1 py-3 px-4 text-center text-gray-500 hover:text-primary whitespace-nowrap">Daftar Resep Tersimpan</button>
+            <button onclick="gantiTab('master')" id="tabBtnMaster" class="flex-1 py-3 px-4 text-center text-gray-500 hover:text-primary whitespace-nowrap">Manajemen Master Data</button>
+        </div>
 
-            if(remember) { localStorage.setItem('hpp_user', u); localStorage.setItem('hpp_pass', p); } 
-            else { localStorage.removeItem('hpp_user'); localStorage.removeItem('hpp_pass'); }
+        <div class="p-6 sm:p-8 space-y-8">
+            <!-- TAB 1: FORM KALKULASI -->
+            <div id="sectionForm" class="space-y-6">
+                <input type="hidden" id="editResepId" value="">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Produk / Resep F&B</label>
+                        <input type="text" id="namaProduk" placeholder="Contoh: Es Cendol Dawet Ayu" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Jumlah Hasil Produksi (Batch / Porsi)</label>
+                        <input type="number" id="jumlahProduksi" value="1" min="1" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" oninput="hitungOtomatis()">
+                    </div>
+                </div>
 
-            if(currentUserRole !== 'admin' && currentUserRole !== 'owner') {
-                document.getElementById('boxStatusKunci').classList.add('hidden');
-                document.getElementById('tabBtnMaster').classList.add('hidden');
-            }
-            ambilMasterDanInisialisasi();
-        } else if(res) { 
-            alert(res.message); 
-        }
-    }
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">1. Bahan Baku Utama</h3><div id="containerBahanBaku" class="space-y-2"></div><button type="button" onclick="tambahBarisBahanBaku()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Bahan Baku</button></div>
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">2. Bahan Penolong & Kemasan</h3><div id="containerBahanPenolong" class="space-y-2"></div><button type="button" onclick="tambahBarisBahanPenolong()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Bahan Penolong</button></div>
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">3. Tenaga Kerja Langsung</h3><div id="containerTenagaKerja" class="space-y-2"></div><button type="button" onclick="tambahBarisTenagaKerja()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Tenaga Kerja</button></div>
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">4. Penyusutan Alat</h3><div id="containerAlat" class="space-y-2"></div><button type="button" onclick="tambahBarisAlat()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Alat</button></div>
+                <div class="border p-4 rounded-xl bg-gray-50 space-y-3"><h3 class="font-bold text-primary text-sm">5. Biaya Overhead Usaha</h3><div id="containerOverhead" class="space-y-2"></div><button type="button" onclick="tambahBarisOverhead()" class="text-xs bg-blue-100 text-primary font-semibold px-3 py-1.5 rounded-md hover:bg-blue-200">+ Tambah Overhead</button></div>
 
-    async function ambilMasterDanInisialisasi() {
-        let data = await fetchAPI('ambilSemuaMasterData');
-        if(data) {
-            masterData = data;
-            kosongkanForm(); tambahBarisBahanBaku(); tambahBarisBahanPenolong(); tambahBarisTenagaKerja(); tambahBarisAlat(); tambahBarisOverhead(); hitungOtomatis();
-            renderTabelMasterDataKategori();
-        }
-    }
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Target Margin Keuntungan (%)</label>
+                        <input type="number" id="targetMargin" value="30" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none" oninput="hitungOtomatis()">
+                    </div>
+                    <div id="boxStatusKunci" class="bg-yellow-50 p-3 rounded-xl border border-yellow-200">
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Akses & Visibilitas Resep untuk Staff</label>
+                        <select id="visibilitasStaff" class="w-full text-xs p-2 border rounded-lg font-semibold bg-white">
+                            <option value="buka">🔓 Izinkan Staff Melihat Resep Ini</option>
+                            <option value="kunci">🔒 Kunci / Sembunyikan Resep dari Staff</option>
+                        </select>
+                    </div>
+                </div>
 
-    async function simpanMasterManual(kategori) {
-        if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { alert('Akses ditolak!'); return; }
+                <div class="border p-4 rounded-xl bg-blue-50/50 border-blue-200 space-y-4">
+                    <h3 class="font-bold text-primary text-sm">Pengaturan Harga Jual per Platform</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div class="bg-white p-3 rounded-lg border space-y-1"><span class="font-bold text-xs text-blue-900 uppercase">1. OFFLINE</span><div><label class="text-[10px] text-gray-500">Diskon (%)</label><input type="number" id="diskonOffline" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Promo (%)</label><input type="number" id="promoOffline" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div></div>
+                        <div class="bg-white p-3 rounded-lg border space-y-1"><span class="font-bold text-xs text-green-700 uppercase">2. GoFood</span><div><label class="text-[10px] text-gray-500">Komisi (%)</label><input type="number" id="komisiGoFood" value="25" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Diskon (%)</label><input type="number" id="diskonGoFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Promo (%)</label><input type="number" id="promoGoFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapGoFood" value="1000" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div></div>
+                        <div class="bg-white p-3 rounded-lg border space-y-1"><span class="font-bold text-xs text-emerald-700 uppercase">3. GrabFood</span><div><label class="text-[10px] text-gray-500">Komisi (%)</label><input type="number" id="komisiGrabFood" value="25" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Diskon (%)</label><input type="number" id="diskonGrabFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Promo (%)</label><input type="number" id="promoGrabFood" value="10" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapGrabFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div></div>
+                        <div class="bg-white p-3 rounded-lg border space-y-1"><span class="font-bold text-xs text-orange-700 uppercase">4. ShopeeFood</span><div><label class="text-[10px] text-gray-500">Komisi (%)</label><input type="number" id="komisiShopeeFood" value="25" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Diskon (%)</label><input type="number" id="diskonShopeeFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Promo (%)</label><input type="number" id="promoShopeeFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div><div><label class="text-[10px] text-gray-500">Biaya Tetap (Rp)</label><input type="number" id="biayaTetapShopeeFood" value="0" class="w-full p-1 border rounded text-xs" oninput="hitungOtomatis()"></div></div>
+                    </div>
+                </div>
 
-        let payload = {};
-        // (Logika validasi input sama persis seperti sebelumnya)
-        if(kategori === 'bahanBaku') {
-            let id = document.getElementById('editMasterIdBB').value; let nama = document.getElementById('mNamaBB').value; let harga = document.getElementById('mHargaBB').value; let qty = document.getElementById('mQtyBB').value; let satuan = document.getElementById('mSatuanBB').value;
-            if(!nama || !harga) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, harga: harga, qty: qty, satuan: satuan };
-        } else if(kategori === 'bahanPenolong') {
-            let id = document.getElementById('editMasterIdBP').value; let nama = document.getElementById('mNamaBP').value; let harga = document.getElementById('mHargaBP').value; let qty = document.getElementById('mQtyBP').value; let satuan = document.getElementById('mSatuanBP').value;
-            if(!nama || !harga) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, harga: harga, qty: qty, satuan: satuan };
-        } else if(kategori === 'tenagaKerja') {
-            let id = document.getElementById('editMasterIdTK').value; let nama = document.getElementById('mNamaTK').value; let gaji = document.getElementById('mGajiTK').value; let jam = document.getElementById('mJamTK').value;
-            if(!nama || !gaji) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, gaji: gaji, jamHari: jam };
-        } else if(kategori === 'alat') {
-            let id = document.getElementById('editMasterIdAlat').value; let nama = document.getElementById('mNamaAlat').value; let harga = document.getElementById('mHargaAlat').value; let qty = document.getElementById('mQtyAlat').value; let residu = document.getElementById('mResiduAlat').value; let umur = document.getElementById('mUmurAlat').value;
-            if(!nama || !harga) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, harga: harga, qty: qty, residu: residu, umur: umur };
-        } else if(kategori === 'overhead') {
-            let id = document.getElementById('editMasterIdOH').value; let nama = document.getElementById('mNamaOH').value; let biaya = document.getElementById('mBiayaOH').value; let qty = document.getElementById('mQtyOH').value;
-            if(!nama || !biaya) { alert('Isi form dengan lengkap!'); return; } payload = { id: id, nama: nama, biaya: biaya, qty: qty };
-        }
+                <div class="bg-blue-50 border border-blue-200 p-6 rounded-2xl space-y-3">
+                    <h3 class="font-bold text-primary text-lg border-b border-blue-200 pb-2">Ringkasan HPP</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
+                        <p>Total Biaya Bahan Baku: <span id="resTotalBB" class="font-bold float-right">Rp 0</span></p>
+                        <p>Total Biaya Bahan Penolong: <span id="resTotalBP" class="font-bold float-right">Rp 0</span></p>
+                        <p>Total Biaya Tenaga Kerja: <span id="resTotalTK" class="font-bold float-right">Rp 0</span></p>
+                        <p>Total Penyusutan & Overhead: <span id="resTotalOH" class="font-bold float-right">Rp 0</span></p>
+                        <hr class="sm:col-span-2 border-blue-200">
+                        <p class="text-sm font-bold">Total Modal Produksi: <span id="resTotalModal" class="font-bold float-right">Rp 0</span></p>
+                        <p class="text-sm font-bold text-primary">HPP per Unit / Porsi: <span id="resHppUnit" class="font-bold float-right text-base">Rp 0</span></p>
+                    </div>
+                </div>
 
-        let res = await fetchAPI('simpanKeMaster', { kategori: kategori, obj: payload });
-        if(res && res.success) {
-            alert(res.message); resetFormMaster(kategori); ambilMasterDanInisialisasi();
-        }
-    }
+                <div class="bg-white border p-4 rounded-xl space-y-3">
+                    <h4 class="font-bold text-gray-700 text-sm">Harga Jual per Platform:</h4>
+                    <div id="listPerbandinganPlatform" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs"></div>
+                </div>
 
-    async function kirimData() {
-        if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { alert('Akses Ditolak!'); return; }
-        let namaProduk = document.getElementById('namaProduk').value; let jumlahProduksi = document.getElementById('jumlahProduksi').value;
-        if(!namaProduk || !jumlahProduksi) { alert('Isi Nama Produk dan Jumlah Produksi!'); return; }
+                <div class="flex flex-wrap sm:flex-nowrap gap-3 pt-2" id="boxTombolAksi">
+                    <button type="button" onclick="unduhPDFFormAktif()" class="flex-1 bg-red-600 text-white font-bold py-3 px-2 text-sm rounded-xl hover:bg-red-700 transition">📄 PDF Resep</button>
+                    <button type="button" onclick="unduhExcelFormAktif()" class="flex-1 bg-green-600 text-white font-bold py-3 px-2 text-sm rounded-xl hover:bg-green-700 transition">📊 Excel Resep</button>
+                    <button type="button" id="btnSimpanDatabase" onclick="kirimData()" class="w-full sm:w-auto sm:flex-1 bg-primary text-white font-bold py-3 px-4 text-sm rounded-xl hover:bg-primaryHover transition">💾 Simpan / Update Data</button>
+                </div>
+            </div>
 
-        let rincianBB = []; document.querySelectorAll('.row-bb').forEach(r => { let nm=r.querySelector('.nama-bb').value; if(nm) rincianBB.push({ nama: nm, hargaBeli: r.querySelector('.harga-bb').value, sBeli: r.querySelector('.satuan-beli-bb').value, qty: r.querySelector('.qty-pakai-bb').value, sPakai: r.querySelector('.satuan-pakai-bb').value }); });
-        let rincianBP = []; document.querySelectorAll('.row-bp').forEach(r => { let nm=r.querySelector('.nama-bp').value; if(nm) rincianBP.push({ nama: nm, qty: r.querySelector('.qty-bp').value, harga: r.querySelector('.harga-bp').value }); });
-        let rincianTK = []; document.querySelectorAll('.row-tk').forEach(r => { let nm=r.querySelector('.nama-tk').value; if(nm) rincianTK.push({ nama: nm, gaji: r.querySelector('.gaji-tk').value, jamHari: r.querySelector('.jam-hari-tk').value, menitResep: r.querySelector('.menit-resep-tk').value }); });
-        let rincianAlat = []; document.querySelectorAll('.row-alat').forEach(r => { let nm=r.querySelector('.nama-alat').value; if(nm) rincianAlat.push({ nama: nm, harga: r.querySelector('.harga-alat').value, residu: r.querySelector('.residu-alat').value, umur: r.querySelector('.umur-alat').value }); });
-        let rincianOH = []; document.querySelectorAll('.row-oh').forEach(r => { let nm=r.querySelector('.nama-oh').value; if(nm) rincianOH.push({ nama: nm, biaya: r.querySelector('.biaya-oh').value, totBatchHarian: r.querySelector('.total-batch-harian').value, batchResep: r.querySelector('.batch-resep-oh').value }); });
+            <!-- TAB 2: DAFTAR RESEP -->
+            <div id="sectionDaftar" class="space-y-4 hidden">
+                <div class="flex justify-between items-center">
+                    <h3 class="font-bold text-primary text-lg">Daftar Resep Tersimpan</h3>
+                    <button onclick="muatDaftarResep()" class="text-xs bg-blue-100 text-primary font-bold px-3 py-1.5 rounded-lg">🔄 Muat Ulang</button>
+                </div>
+                <div class="overflow-x-auto border rounded-xl">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-gray-100 text-gray-700 border-b">
+                            <tr>
+                                <th class="p-3">Nama Produk / Resep</th>
+                                <th class="p-3">HPP / Unit</th>
+                                <th class="p-3">Status</th>
+                                <th class="p-3 text-center">Aksi Buka / Edit</th>
+                                <th class="p-3 text-center">Export / Unduh</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelResepBody">
+                            <tr><td colspan="5" class="p-4 text-center text-gray-500">Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-        let payloadData = {
-            id: document.getElementById('editResepId').value, namaProduk: namaProduk, jumlahProduksi: Number(jumlahProduksi), hppPerUnit: cacheHitung.hppPerUnit, hargaJualDasar: cacheHitung.hargaJualDasar,
-            targetMargin: Number(document.getElementById('targetMargin').value), visibilitasStaff: document.getElementById('visibilitasStaff').value,
-            rincianJSON: JSON.stringify({ bb: rincianBB, bp: rincianBP, tk: rincianTK, alat: rincianAlat, oh: rincianOH })
-        };
+            <!-- TAB 3: MANAJEMEN MASTER DATA (DENGAN SCROLL INTERNAL & STICKY HEADER) -->
+            <div id="sectionMaster" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-primary text-lg">Manajemen Master Data</h3>
+                    <button onclick="ambilMasterDanInisialisasi()" class="text-xs bg-blue-100 text-primary font-bold px-3 py-1.5 rounded-lg">🔄 Segarkan Data</button>
+                </div>
 
-        document.getElementById('btnSimpanDatabase').innerText = "Menyimpan...";
-        let res = await fetchAPI('simpanDanHitungData', payloadData);
-        document.getElementById('btnSimpanDatabase').innerText = "💾 Simpan / Update Data";
-        
-        if(res && res.success) { alert(res.message); gantiTab('daftar'); }
-    }
+                <div class="flex gap-2 overflow-x-auto border-b pb-3 mb-5">
+                    <button id="btn-master-bb" onclick="bukaMasterPanel('master-bb')" class="btn-master-tab px-4 py-2 bg-primary text-white font-semibold rounded-lg text-xs whitespace-nowrap">📦 Bahan Baku</button>
+                    <button id="btn-master-bp" onclick="bukaMasterPanel('master-bp')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">🏷️ Bahan Penolong</button>
+                    <button id="btn-master-tk" onclick="bukaMasterPanel('master-tk')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">👨‍🍳 Tenaga Kerja</button>
+                    <button id="btn-master-alat" onclick="bukaMasterPanel('master-alat')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">⚙️ Master Alat</button>
+                    <button id="btn-master-oh" onclick="bukaMasterPanel('master-oh')" class="btn-master-tab px-4 py-2 bg-gray-200 text-gray-700 font-semibold rounded-lg text-xs whitespace-nowrap hover:bg-gray-300">💡 Biaya Overhead</button>
+                </div>
 
-    async function muatDaftarResep() {
-        let tbody = document.getElementById('tabelResepBody'); tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Memuat data...</td></tr>`;
-        let data = await fetchAPI('ambilDaftarResep', { userRole: currentUserRole });
-        
-        if(!data || data.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Belum ada resep tersimpan.</td></tr>`; return; }
-        
-        let html = '';
-        data.forEach(item => {
-            let st = item.visibilitasStaff === 'kunci' ? `<span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-[10px]">🔒 Kunci</span>` : `<span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]">🔓 Buka</span>`;
-            html += `<tr class="border-b hover:bg-gray-50">
-                <td class="p-3 font-semibold text-primary">${item.namaProduk}</td>
-                <td class="p-3 font-bold text-blue-800">Rp ${Math.round(item.hppPerUnit).toLocaleString('id-ID')}</td>
-                <td class="p-3">${st}</td>
-                <td class="p-3 text-center space-x-1"><button onclick="bukaResepLengkap('${item.id}')" class="text-[10px] bg-blue-100 text-primary px-2 py-1 rounded font-bold">Lihat/Edit</button> ${currentUserRole === 'admin' || currentUserRole === 'owner' ? `<button onclick="hapusResep('${item.id}')" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold">Hapus</button>` : ``}</td>
-                <td class="p-3 text-center space-x-1"><button onclick="unduhPDFDariList('${item.id}')" class="text-[10px] bg-red-600 text-white px-2 py-1 rounded font-bold">📄 PDF</button> <button onclick="unduhExcelDariList('${item.id}')" class="text-[10px] bg-green-600 text-white px-2 py-1 rounded font-bold">📊 Excel</button></td>
-            </tr>`;
+                <!-- MASTER BB -->
+                <div id="master-bb" class="panel-master space-y-4">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Bahan Baku</p>
+                        <input type="hidden" id="editMasterIdBB" value="">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                            <div><label class="text-[10px] font-semibold text-gray-500">Nama Bahan</label><input type="text" id="mNamaBB" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Harga Beli (Rp)</label><input type="number" id="mHargaBB" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Jml Stok</label><input type="number" id="mQtyBB" value="1" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Satuan Beli</label><select id="mSatuanBB" class="w-full p-2 border rounded bg-white"><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option><option value="g">g</option><option value="ml">ml</option></select></div>
+                        </div>
+                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('bahanBaku')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('bahanBaku')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Nama Bahan</th><th class="p-3">Harga Beli</th><th class="p-3">Stok</th><th class="p-3">Satuan</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                            <tbody id="tabelMasterBB" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MASTER BP -->
+                <div id="master-bp" class="panel-master space-y-4 hidden">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Bahan Penolong</p>
+                        <input type="hidden" id="editMasterIdBP" value="">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+                            <div><label class="text-[10px] font-semibold text-gray-500">Nama Item</label><input type="text" id="mNamaBP" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Harga Beli (Rp)</label><input type="number" id="mHargaBP" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Jml Stok</label><input type="number" id="mQtyBP" value="1" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Satuan Beli</label><select id="mSatuanBP" class="w-full p-2 border rounded bg-white"><option value="pcs">pcs</option><option value="pack">pack</option><option value="roll">roll</option></select></div>
+                        </div>
+                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('bahanPenolong')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('bahanPenolong')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Nama Item</th><th class="p-3">Harga Satuan</th><th class="p-3">Stok</th><th class="p-3">Satuan</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                            <tbody id="tabelMasterBP" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MASTER TK -->
+                <div id="master-tk" class="panel-master space-y-4 hidden">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Tenaga Kerja</p>
+                        <input type="hidden" id="editMasterIdTK" value="">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div><label class="text-[10px] font-semibold text-gray-500">Posisi / Karyawan</label><input type="text" id="mNamaTK" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Gaji Bulanan (Rp)</label><input type="number" id="mGajiTK" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Jam Kerja / Hari</label><input type="number" id="mJamTK" value="8" class="w-full p-2 border rounded"></div>
+                        </div>
+                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('tenagaKerja')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('tenagaKerja')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Posisi / Karyawan</th><th class="p-3">Gaji Bulanan</th><th class="p-3">Jam / Hari</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                            <tbody id="tabelMasterTK" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MASTER ALAT -->
+                <div id="master-alat" class="panel-master space-y-4 hidden">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Master Alat</p>
+                        <input type="hidden" id="editMasterIdAlat" value="">
+                        <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 text-xs">
+                            <div><label class="text-[10px] font-semibold text-gray-500">Nama Alat</label><input type="text" id="mNamaAlat" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Harga Beli (Rp)</label><input type="number" id="mHargaAlat" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Jml Unit</label><input type="number" id="mQtyAlat" value="1" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Residu (Rp)</label><input type="number" id="mResiduAlat" value="0" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Umur (Bln)</label><input type="number" id="mUmurAlat" value="12" class="w-full p-2 border rounded"></div>
+                        </div>
+                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('alat')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('alat')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Nama Alat</th><th class="p-3">Harga Beli</th><th class="p-3">Jml Unit</th><th class="p-3">Residu</th><th class="p-3">Umur</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                            <tbody id="tabelMasterAlat" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MASTER OH -->
+                <div id="master-oh" class="panel-master space-y-4 hidden">
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-200 shadow-sm space-y-3">
+                        <p class="text-xs font-bold text-primary border-b border-blue-200 pb-1">➕ Input / Edit Biaya Overhead</p>
+                        <input type="hidden" id="editMasterIdOH" value="">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div><label class="text-[10px] font-semibold text-gray-500">Keterangan Biaya</label><input type="text" id="mNamaOH" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Biaya Bulanan (Rp)</label><input type="number" id="mBiayaOH" class="w-full p-2 border rounded"></div>
+                            <div><label class="text-[10px] font-semibold text-gray-500">Jml Pemakaian/Bulan</label><input type="number" id="mQtyOH" value="1" class="w-full p-2 border rounded"></div>
+                        </div>
+                        <div class="flex gap-2 pt-1"><button onclick="simpanMasterManual('overhead')" class="bg-primary text-white font-bold px-4 py-2 rounded-lg text-xs">💾 Simpan</button><button onclick="resetFormMaster('overhead')" class="bg-gray-300 text-gray-700 font-bold px-3 py-2 rounded-lg text-xs">Reset</button></div>
+                    </div>
+                    <div class="overflow-y-auto max-h-80 bg-white border rounded-lg shadow-inner">
+                        <table class="w-full text-left text-xs whitespace-nowrap">
+                            <thead class="bg-gray-100 text-gray-700 sticky top-0 shadow-sm z-10"><tr><th class="p-3">Keterangan Biaya</th><th class="p-3">Biaya Bulanan (Rp)</th><th class="p-3">Jml Pemakaian</th><th class="p-3 text-center">Aksi</th></tr></thead>
+                            <tbody id="tabelMasterOH" class="divide-y divide-gray-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Masukkan URL Web App Google Apps Script Anda di bawah ini
+        const API_URL = "https://script.google.com/macros/s/AKfycbw3wcaa8CQ7mAmYEWXSv_pmNBT52bA7TWiZoO0FNDZSx543/exec"; 
+
+        let currentUserRole = "";
+        let masterData = { bahanBaku: [], bahanPenolong: [], tenagaKerja: [], alat: [], overhead: [] };
+        let cacheHitung = {};
+        let deferredPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            document.getElementById('btnInstallPWA').classList.remove('hidden');
         });
-        tbody.innerHTML = html;
-    }
 
-    async function bukaResepLengkap(id) {
-        let item = await fetchAPI('ambilDetailResepById', { id: id });
-        if(!item) { alert('Data resep tidak ditemukan!'); return; }
-        
-        gantiTab('form'); kosongkanForm();
-        document.getElementById('editResepId').value = item.id; document.getElementById('namaProduk').value = item.namaProduk; document.getElementById('jumlahProduksi').value = item.jumlahProduksi; document.getElementById('targetMargin').value = item.targetMargin; document.getElementById('visibilitasStaff').value = item.visibilitasStaff || 'buka';
-
-        let json = JSON.parse(item.rincianJSON || '{}');
-        // Render data ke form (Sama persis dengan logika render versi sebelumnya)
-        if(json.bb) { json.bb.forEach(b => { tambahBarisBahanBaku(); let rows = document.querySelectorAll('.row-bb'); let r = rows[rows.length - 1]; r.querySelector('.nama-bb').value = b.nama; r.querySelector('.nama-bb').disabled = false; r.querySelector('.harga-bb').value = b.hargaBeli; r.querySelector('.harga-bb').disabled = false; r.querySelector('.satuan-beli-bb').value = b.sBeli; r.querySelector('.satuan-beli-bb').disabled = false; r.querySelector('.qty-pakai-bb').value = b.qty; r.querySelector('.satuan-pakai-bb').value = b.sPakai; }); }
-        if(json.bp) { json.bp.forEach(b => { tambahBarisBahanPenolong(); let rows = document.querySelectorAll('.row-bp'); let r = rows[rows.length - 1]; r.querySelector('.nama-bp').value = b.nama; r.querySelector('.nama-bp').disabled = false; r.querySelector('.harga-bp').value = b.harga; r.querySelector('.harga-bp').disabled = false; r.querySelector('.qty-bp').value = b.qty; }); }
-        if(json.tk) { json.tk.forEach(t => { tambahBarisTenagaKerja(); let rows = document.querySelectorAll('.row-tk'); let r = rows[rows.length - 1]; r.querySelector('.nama-tk').value = t.nama; r.querySelector('.nama-tk').disabled = false; r.querySelector('.gaji-tk').value = t.gaji; r.querySelector('.gaji-tk').disabled = false; r.querySelector('.jam-hari-tk').value = t.jamHari; r.querySelector('.jam-hari-tk').disabled=false; r.querySelector('.menit-resep-tk').value = t.menitResep; }); }
-        if(json.alat) { json.alat.forEach(a => { tambahBarisAlat(); let rows = document.querySelectorAll('.row-alat'); let r = rows[rows.length - 1]; r.querySelector('.nama-alat').value = a.nama; r.querySelector('.nama-alat').disabled = false; r.querySelector('.harga-alat').value = a.harga; r.querySelector('.harga-alat').disabled = false; r.querySelector('.residu-alat').value = a.residu; r.querySelector('.residu-alat').disabled=false; r.querySelector('.umur-alat').value = a.umur; r.querySelector('.umur-alat').disabled=false; hitungSusutAlat(r.querySelector('.harga-alat')); }); }
-        if(json.oh) { json.oh.forEach(o => { tambahBarisOverhead(); let rows = document.querySelectorAll('.row-oh'); let r = rows[rows.length - 1]; r.querySelector('.nama-oh').value = o.nama; r.querySelector('.nama-oh').disabled = false; r.querySelector('.biaya-oh').value = o.biaya; r.querySelector('.biaya-oh').disabled = false; if(o.totBatchHarian) r.querySelector('.total-batch-harian').value = o.totBatchHarian; if(o.batchResep) r.querySelector('.batch-resep-oh').value = o.batchResep; }); }
-
-        if(currentUserRole !== 'admin' && currentUserRole !== 'owner') { document.querySelectorAll('#sectionForm input, #sectionForm select').forEach(el => el.disabled = true); document.getElementById('btnSimpanDatabase').classList.add('hidden'); } else { document.getElementById('btnSimpanDatabase').classList.remove('hidden'); }
-        hitungOtomatis();
-    }
-
-    async function hapusResep(id) {
-        if(confirm('Hapus resep ini?')) { 
-            let res = await fetchAPI('hapusResep', { id: id, userRole: currentUserRole });
-            if(res && res.success) { alert(res.message); muatDaftarResep(); }
+        function installAppPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') document.getElementById('btnInstallPWA').classList.add('hidden');
+                    deferredPrompt = null;
+                });
+            }
         }
-    }
 
-    async function hapusMasterItem(kategori, id) {
-        if(confirm('Hapus item master data ini?')) { 
-            let res = await fetchAPI('hapusMasterItem', { kategori: kategori, id: id, userRole: currentUserRole });
-            if(res && res.success) { alert(res.message); ambilMasterDanInisialisasi(); }
+        async function fetchAPI(action, payload = {}) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ action: action, payload: payload })
+                });
+                const result = await response.json();
+                if (result.status === 'success') return result.data;
+                else throw new Error(result.message);
+            } catch (error) {
+                console.error("API Error:", error);
+                alert("Gagal terhubung ke database: " + error.message);
+                return null;
+            }
         }
-    }
 
-    // Fungsi fetch khusus untuk Download Background (Dari List)
-    async function unduhPDFDariList(id) {
-        alert('Mempersiapkan PDF... Mohon tunggu.');
-        let item = await fetchAPI('ambilDetailResepById', { id: id });
-        if(item) {
-            let dataExport = parseDataResepUntukExport(item);
-            let trRows = ''; dataExport.rincian.forEach(r => { trRows += `<tr style="border-bottom: 1px solid #ddd;"><td style="padding: 6px 4px;">${r[0]}</td><td style="padding: 6px 4px;">${r[1]}</td><td style="padding: 6px 4px; text-align: center;">${r[2]} ${r[3]}</td></tr>`; });
-            let tpl = `<div style="font-family: Arial, sans-serif; color: #333; padding: 20px;"><h1 style="color: #1B365D; border-bottom: 2px solid #1B365D; padding-bottom: 10px; margin-bottom: 20px;">Rincian HPP Resep</h1><table style="width: 100%; margin-bottom: 20px; font-size: 14px;"><tr><td style="font-weight: bold; width: 150px;">Nama Resep:</td><td>${dataExport.nama}</td></tr><tr><td style="font-weight: bold;">Jumlah Produksi:</td><td>${dataExport.batch} Porsi/Batch</td></tr><tr><td style="font-weight: bold;">HPP / Porsi:</td><td>Rp ${Math.round(dataExport.hpp).toLocaleString('id-ID')}</td></tr><tr><td style="font-weight: bold;">Harga Jual Dasar:</td><td>Rp ${Math.round(dataExport.hargaDasar).toLocaleString('id-ID')}</td></tr></table><h3 style="background-color: #EAEFF5; padding: 8px; font-size: 14px;">Breakdown Komposisi Item</h3><table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;"><tr style="background-color: #1B365D; color: white;"><th style="padding: 8px 4px; text-align: left;">Kategori</th><th style="padding: 8px 4px; text-align: left;">Nama Item</th><th style="padding: 8px 4px; text-align: center;">Kuantitas Pakai</th></tr>${trRows}</table><p style="margin-top: 40px; font-size: 10px; color: #888; text-align: center;">Dokumen HPP dicetak dari Sistem Internal.</p></div>`;
-            let opt = { margin: 0.5, filename: `HPP_${dataExport.nama.replace(/\s+/g,'_')}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+        function togglePasswordVisibility() {
+            let pi = document.getElementById('loginPass'); pi.type = pi.type === 'password' ? 'text' : 'password';
+        }
+
+        async function prosesLogin() {
+            let u = document.getElementById('loginUser').value;
+            let p = document.getElementById('loginPass').value;
+            let remember = document.getElementById('rememberMe').checked;
+
+            let res = await fetchAPI('prosesLogin', { username: u, password: p });
+            if(res && res.success) {
+                currentUserRole = res.role.toLowerCase();
+                document.getElementById('labelRoleUser').innerText = u + " (" + currentUserRole.toUpperCase() + ")";
+                document.getElementById('loginModal').style.display = 'none';
+                document.getElementById('appContent').classList.remove('hidden');
+
+                if(remember) { localStorage.setItem('hpp_user', u); localStorage.setItem('hpp_pass', p); }
+                else { localStorage.removeItem('hpp_user'); localStorage.removeItem('hpp_pass'); }
+
+                if(currentUserRole !== 'admin' && currentUserRole !== 'owner') {
+                    document.getElementById('boxStatusKunci').classList.add('hidden');
+                    document.getElementById('tabBtnMaster').classList.add('hidden');
+                }
+                ambilMasterDanInisialisasi();
+            } else if(res) { alert(res.message); }
+        }
+
+        function logoutApp() {
+            localStorage.removeItem('hpp_user'); localStorage.removeItem('hpp_pass'); location.reload();
+        }
+
+        async function ambilMasterDanInisialisasi() {
+            let data = await fetchAPI('ambilSemuaMasterData');
+            if(data) {
+                masterData = data;
+                kosongkanForm();
+                tambahBarisBahanBaku(); tambahBarisBahanPenolong(); tambahBarisTenagaKerja(); tambahBarisAlat(); tambahBarisOverhead();
+                hitungOtomatis(); renderTabelMasterDataKategori();
+            }
+        }
+
+        function kosongkanForm() {
+            document.getElementById('editResepId').value = '';
+            document.getElementById('namaProduk').value = '';
+            document.getElementById('jumlahProduksi').value = 1;
+            document.getElementById('containerBahanBaku').innerHTML = '';
+            document.getElementById('containerBahanPenolong').innerHTML = '';
+            document.getElementById('containerTenagaKerja').innerHTML = '';
+            document.getElementById('containerAlat').innerHTML = '';
+            document.getElementById('containerOverhead').innerHTML = '';
+        }
+
+        function gantiTab(tab) {
+            ['form', 'daftar', 'master'].forEach(s => {
+                document.getElementById('section' + s.charAt(0).toUpperCase() + s.slice(1)).classList.add('hidden');
+                document.getElementById('tabBtn' + s.charAt(0).toUpperCase() + s.slice(1)).className = "flex-1 py-3 px-4 text-center text-gray-500 hover:text-primary whitespace-nowrap";
+            });
+            document.getElementById('section' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.remove('hidden');
+            document.getElementById('tabBtn' + tab.charAt(0).toUpperCase() + tab.slice(1)).className = "flex-1 py-3 px-4 text-center border-b-2 border-primary text-primary bg-white whitespace-nowrap";
+
+            if(tab === 'daftar') muatDaftarResep();
+            if(tab === 'master') renderTabelMasterDataKategori();
+        }
+
+        function bukaMasterPanel(targetId) {
+            document.querySelectorAll('.panel-master').forEach(el => el.classList.add('hidden'));
+            document.getElementById(targetId).classList.remove('hidden');
+            document.querySelectorAll('.btn-master-tab').forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white'); btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            document.getElementById('btn-' + targetId).classList.remove('bg-gray-200', 'text-gray-700');
+            document.getElementById('btn-' + targetId).classList.add('bg-primary', 'text-white');
+        }
+
+        // FORM BUILDERS (BB, BP, TK, Alat, OH)
+        function tambahBarisBahanBaku() {
+            let container = document.getElementById('containerBahanBaku');
+            let div = document.createElement('div');
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bb bg-white p-2.5 rounded-lg border text-xs';
+            let opsi = `<option value="">-- Pilih Master --</option>`;
+            masterData.bahanBaku.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]} / ${item.data[3]||'kg'})</option>`; });
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded font-semibold" onchange="pilihMasterBB(this)">${opsi}<option value="manual">+ Input Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bb" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bb" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><select class="w-full p-1 border rounded satuan-beli-bb" disabled><option value="kg">kg</option><option value="liter">liter</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex gap-1"><input type="number" placeholder="Pakai" class="w-1/2 p-1 border rounded qty-pakai-bb" oninput="hitungOtomatis()"><select class="w-1/2 p-1 border rounded satuan-pakai-bb" onchange="hitungOtomatis()"><option value="g">g</option><option value="ml">ml</option><option value="pcs">pcs</option></select></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-bb">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold ml-1">✕</button></div>`;
+            container.appendChild(div);
+        }
+
+        function pilihMasterBB(sel) {
+            let row = sel.closest('.row-bb'); let val = sel.value;
+            let nama = row.querySelector('.nama-bb'); let harga = row.querySelector('.harga-bb'); let satuanBeli = row.querySelector('.satuan-beli-bb');
+            if(val !== "" && val !== "manual") {
+                let data = masterData.bahanBaku[val].data;
+                nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; satuanBeli.value = data[3] || 'kg'; satuanBeli.disabled = true;
+            } else {
+                nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false; satuanBeli.disabled = false;
+            }
+            hitungOtomatis();
+        }
+
+        function tambahBarisOverhead() {
+            let container = document.getElementById('containerOverhead');
+            let div = document.createElement('div');
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-oh bg-white p-2 rounded-lg border text-xs';
+            let opsi = `<option value="">-- Pilih Master --</option>`;
+            masterData.overhead.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]} /bln)</option>`; });
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterOH(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Ket" class="w-full p-1 border rounded nama-oh" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Biaya/Bln" class="w-full p-1 border rounded biaya-oh" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1"><input type="number" value="10" placeholder="Tot Batch" class="w-full p-1 border rounded total-batch-harian" oninput="hitungOtomatis()"></div><div class="sm:col-span-1"><input type="number" value="1" placeholder="Batch Resep" class="w-full p-1 border rounded batch-resep-oh" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between items-center"><span class="font-bold text-primary subtotal-oh">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            container.appendChild(div);
+        }
+
+        function pilihMasterOH(sel) {
+            let row = sel.closest('.row-oh'); let val = sel.value;
+            let nama = row.querySelector('.nama-oh'); let biaya = row.querySelector('.biaya-oh');
+            if(val !== "" && val !== "manual") {
+                let data = masterData.overhead[val].data;
+                nama.value = data[0]; nama.disabled = true; biaya.value = data[1]; biaya.disabled = true;
+            } else {
+                nama.value = ""; nama.disabled = false; biaya.value = ""; biaya.disabled = false;
+            }
+            hitungOtomatis();
+        }
+
+        function tambahBarisTenagaKerja() {
+            let container = document.getElementById('containerTenagaKerja');
+            let div = document.createElement('div');
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-tk bg-white p-2.5 rounded-lg border text-xs';
+            let opsi = `<option value="">-- Pilih --</option>`;
+            masterData.tenagaKerja.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]}/bln)</option>`; });
+            div.innerHTML = `<div class="sm:col-span-3"><select class="w-full p-1 border rounded" onchange="pilihMasterTK(this)">${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Posisi" class="w-full p-1 border rounded nama-tk" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Gaji" class="w-full p-1 border rounded gaji-tk" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-2"><input type="number" value="8" class="w-full p-1 border rounded jam-hari-tk" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Menit" class="w-full p-1 border rounded menit-resep-tk" oninput="hitungOtomatis()"></div><div class="sm:col-span-2 flex justify-between"><span class="font-bold text-primary subtotal-tk">Rp 0</span><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            container.appendChild(div);
+        }
+
+        function pilihMasterTK(sel) {
+            let row = sel.closest('.row-tk'); let val = sel.value;
+            let nama = row.querySelector('.nama-tk'); let gaji = row.querySelector('.gaji-tk'); let jamHari = row.querySelector('.jam-hari-tk');
+            if(val !== "" && val !== "manual") {
+                let data = masterData.tenagaKerja[val].data;
+                nama.value = data[0]; nama.disabled = true; gaji.value = data[1]; gaji.disabled = true; jamHari.value = data[2] || 8; jamHari.disabled = true;
+            } else {
+                nama.value = ""; nama.disabled = false; gaji.value = ""; gaji.disabled = false; jamHari.disabled = false;
+            }
+            hitungOtomatis();
+        }
+
+        function tambahBarisBahanPenolong() {
+            let container = document.getElementById('containerBahanPenolong');
+            let div = document.createElement('div');
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-bp bg-white p-2 rounded-lg border text-xs';
+            let opsi = `<option value="">-- Pilih --</option>`;
+            masterData.bahanPenolong.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
+            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterBP(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-3"><input type="text" placeholder="Nama" class="w-full p-1 border rounded nama-bp" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Qty" class="w-full p-1 border rounded qty-bp" oninput="hitungOtomatis()"></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-bp" oninput="hitungOtomatis()" disabled></div><div class="sm:col-span-1 flex justify-between"><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            container.appendChild(div);
+        }
+
+        function pilihMasterBP(sel) {
+            let row = sel.closest('.row-bp'); let val = sel.value;
+            let nama = row.querySelector('.nama-bp'); let harga = row.querySelector('.harga-bp');
+            if(val !== "" && val !== "manual") {
+                let data = masterData.bahanPenolong[val].data;
+                nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true;
+            } else {
+                nama.value = ""; nama.disabled = false; harga.value = ""; harga.disabled = false;
+            }
+            hitungOtomatis();
+        }
+
+        function tambahBarisAlat() {
+            let container = document.getElementById('containerAlat');
+            let div = document.createElement('div');
+            div.className = 'grid grid-cols-1 sm:grid-cols-12 gap-2 items-center row-alat bg-white p-2 rounded-lg border text-xs';
+            let opsi = `<option value="">-- Pilih --</option>`;
+            masterData.alat.forEach((item, idx) => { opsi += `<option value="${idx}">${item.data[0]} (Rp ${item.data[1]})</option>`; });
+            div.innerHTML = `<div class="sm:col-span-4"><select class="w-full p-1 border rounded" onchange="pilihMasterAlat(this)"><option value="">Pilih</option>${opsi}<option value="manual">+ Manual</option></select></div><div class="sm:col-span-2"><input type="text" placeholder="Alat" class="w-full p-1 border rounded nama-alat" disabled></div><div class="sm:col-span-2"><input type="number" placeholder="Harga" class="w-full p-1 border rounded harga-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Residu" class="w-full p-1 border rounded residu-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Bln" class="w-full p-1 border rounded umur-alat" oninput="hitungSusutAlat(this)" disabled></div><div class="sm:col-span-1"><input type="number" placeholder="Susut" class="w-full p-1 border rounded bg-gray-100 susut-alat" readonly></div><div class="sm:col-span-1"><button onclick="hapusBaris(this)" class="text-red-500 font-bold">✕</button></div>`;
+            container.appendChild(div);
+        }
+
+        function pilihMasterAlat(sel) {
+            let row = sel.closest('.row-alat'); let val = sel.value;
+            let nama = row.querySelector('.nama-alat'); let harga = row.querySelector('.harga-alat'); let residu = row.querySelector('.residu-alat'); let umur = row.querySelector('.umur-alat');
+            if(val !== "" && val !== "manual") {
+                let data = masterData.alat[val].data;
+                nama.value = data[0]; nama.disabled = true; harga.value = data[1]; harga.disabled = true; residu.value = data[3]||0; residu.disabled = true; umur.value = data[4]||12; umur.disabled = true;
+                hitungSusutAlat(harga);
+            } else {
+                nama.value = ""; nama.disabled = false; residu.value = ""; residu.disabled = false; harga.value = ""; harga.disabled = false; umur.value = ""; umur.disabled = false;
+            }
+        }
+
+        function hitungSusutAlat(el) {
+            let row = el.closest('.row-alat');
+            let h = Number(row.querySelector('.harga-alat').value) || 0;
+            let r = Number(row.querySelector('.residu-alat').value) || 0;
+            let u = Number(row.querySelector('.umur-alat').value) || 1;
+            let susutBln = u > 0 ? (h - r) / u : 0;
+            row.querySelector('.susut-alat').value = Math.round(susutBln / 30);
+            hitungOtomatis();
+        }
+
+        function hapusBaris(btn) { btn.closest('div.grid').remove(); hitungOtomatis(); }
+
+        function hitungOtomatis() {
+            let sumBB = 0;
+            document.querySelectorAll('.row-bb').forEach(r => {
+                let hBeli = Number(r.querySelector('.harga-bb').value) || 0;
+                let sBeli = r.querySelector('.satuan-beli-bb').value;
+                let qPakai = Number(r.querySelector('.qty-pakai-bb').value) || 0;
+                let sPakai = r.querySelector('.satuan-pakai-bb').value;
+                let hPakai = (sBeli === 'kg' && sPakai === 'g') ? hBeli / 1000 : (sBeli === 'liter' && sPakai === 'ml') ? hBeli / 1000 : hBeli;
+                let sub = hPakai * qPakai;
+                r.querySelector('.subtotal-bb').innerText = 'Rp ' + Math.round(sub).toLocaleString('id-ID');
+                sumBB += sub;
+            });
+
+            let sumBP = 0; document.querySelectorAll('.row-bp').forEach(r => sumBP += (Number(r.querySelector('.qty-bp').value) || 0) * (Number(r.querySelector('.harga-bp').value) || 0));
+            let sumTK = 0; document.querySelectorAll('.row-tk').forEach(r => {
+                let g = Number(r.querySelector('.gaji-tk').value) || 0; let jH = Number(r.querySelector('.jam-hari-tk').value) || 8; let mR = Number(r.querySelector('.menit-resep-tk').value) || 0;
+                let sub = (g / (25 * jH * 60)) * mR;
+                r.querySelector('.subtotal-tk').innerText = 'Rp ' + Math.round(sub).toLocaleString('id-ID'); sumTK += sub;
+            });
+
+            let sumSusut = 0; document.querySelectorAll('.susut-alat').forEach(el => sumSusut += Number(el.value) || 0);
+            let sumOH = 0; document.querySelectorAll('.row-oh').forEach(r => {
+                let bBln = Number(r.querySelector('.biaya-oh').value) || 0; let tBH = Number(r.querySelector('.total-batch-harian').value) || 1; let bRes = Number(r.querySelector('.batch-resep-oh').value) || 1;
+                let sub = ((bBln / 30) / tBH) * bRes;
+                r.querySelector('.subtotal-oh').innerText = 'Rp ' + Math.round(sub).toLocaleString('id-ID'); sumOH += sub;
+            });
+
+            let totalModal = sumBB + sumBP + sumTK + sumSusut + sumOH;
+            let jProd = Number(document.getElementById('jumlahProduksi').value) || 1;
+            let hppUnit = totalModal / jProd;
+            let margin = Number(document.getElementById('targetMargin').value) || 0;
+            let hJualDasar = hppUnit / (1 - (margin / 100));
+
+            let configs = [
+                { id: 'Offline', komisi: 0, diskon: Number(document.getElementById('diskonOffline').value)||0, promo: Number(document.getElementById('promoOffline').value)||0, biayaTetap: 0 },
+                { id: 'GoFood', komisi: Number(document.getElementById('komisiGoFood').value)||0, diskon: Number(document.getElementById('diskonGoFood').value)||0, promo: Number(document.getElementById('promoGoFood').value)||0, biayaTetap: Number(document.getElementById('biayaTetapGoFood').value)||0 },
+                { id: 'GrabFood', komisi: Number(document.getElementById('komisiGrabFood').value)||0, diskon: Number(document.getElementById('diskonGrabFood').value)||0, promo: Number(document.getElementById('promoGrabFood').value)||0, biayaTetap: Number(document.getElementById('biayaTetapGrabFood').value)||0 },
+                { id: 'ShopeeFood', komisi: Number(document.getElementById('komisiShopeeFood').value)||0, diskon: Number(document.getElementById('diskonShopeeFood').value)||0, promo: Number(document.getElementById('promoShopeeFood').value)||0, biayaTetap: Number(document.getElementById('biayaTetapShopeeFood').value)||0 }
+            ];
+
+            cacheHitung = { totalModal: totalModal, hppPerUnit: hppUnit, hargaJualDasar: hJualDasar, configs: configs };
+
+            document.getElementById('resTotalBB').innerText = 'Rp ' + Math.round(sumBB).toLocaleString('id-ID');
+            document.getElementById('resTotalBP').innerText = 'Rp ' + Math.round(sumBP).toLocaleString('id-ID');
+            document.getElementById('resTotalTK').innerText = 'Rp ' + Math.round(sumTK).toLocaleString('id-ID');
+            document.getElementById('resTotalOH').innerText = 'Rp ' + Math.round(sumSusut + sumOH).toLocaleString('id-ID');
+            document.getElementById('resTotalModal').innerText = 'Rp ' + Math.round(totalModal).toLocaleString('id-ID');
+            document.getElementById('resHppUnit').innerText = 'Rp ' + Math.round(hppUnit).toLocaleString('id-ID');
+
+            renderPlatformList(hJualDasar, configs);
+        }
+
+        function renderPlatformList(hDasar, configs) {
+            let container = document.getElementById('listPerbandinganPlatform'); let html = '';
+            let label = { 'Offline': 'OFFLINE', 'GoFood': 'GoFood', 'GrabFood': 'GrabFood', 'ShopeeFood': 'ShopeeFood' };
+            configs.forEach(c => {
+                let pot = c.komisi + c.diskon + c.promo;
+                let fp = pot < 100 ? (hDasar + c.biayaTetap) / (1 - (pot / 100)) : hDasar + c.biayaTetap;
+                html += `<div class="bg-gray-50 border p-3 rounded-xl flex flex-col justify-between"><span class="font-bold text-gray-700">${label[c.id]}</span><span class="text-primary font-extrabold text-sm">Rp ${Math.round(fp).toLocaleString('id-ID')}</span></div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        // EXPORT PDF & EXCEL DARI FORM AKTIF
+        function extractDataFormAktif() {
+            let nama = document.getElementById('namaProduk').value || "Resep";
+            let batch = document.getElementById('jumlahProduksi').value || 1;
+            let rincian = [];
+            document.querySelectorAll('.row-bb').forEach(r => { let n=r.querySelector('.nama-bb').value; let q=r.querySelector('.qty-pakai-bb').value; let p=r.querySelector('.subtotal-bb').innerText.replace('Rp ','').replace(/\./g,''); if(n) rincian.push(['Bahan Baku', n, q, Number(p)]); });
+            return { nama: nama, batch: batch, rincian: rincian, totalModal: cacheHitung.totalModal, hpp: cacheHitung.hppPerUnit, platforms: cacheHitung.configs, hargaDasar: cacheHitung.hargaJualDasar };
+        }
+
+        function unduhPDFFormAktif() {
+            let data = extractDataFormAktif();
+            let tpl = `<div style="padding:20px; font-family:Arial;"><h2>HPP: ${data.nama}</h2><p>HPP / Porsi: Rp ${Math.round(data.hpp).toLocaleString('id-ID')}</p></div>`;
+            let opt = { margin: 0.5, filename: `HPP_${data.nama}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
             let el = document.createElement('div'); el.innerHTML = tpl; html2pdf().set(opt).from(el).save();
         }
-    }
 
-    async function unduhExcelDariList(id) {
-        alert('Mempersiapkan Excel... Mohon tunggu.');
-        let item = await fetchAPI('ambilDetailResepById', { id: id });
-        if(item) {
-            let dataExport = parseDataResepUntukExport(item);
-            let arr = [['INFORMASI RESEP'], ['Nama Resep', dataExport.nama], ['Jumlah Produksi', dataExport.batch + ' Porsi'], ['HPP / Unit', Math.round(dataExport.hpp)], ['Harga Jual Dasar', Math.round(dataExport.hargaDasar)], [], ['Kategori', 'Nama Item', 'Kuantitas Pakai', 'Satuan']];
-            dataExport.rincian.forEach(r => arr.push([r[0], r[1], r[2], r[3]]));
-            let ws = XLSX.utils.aoa_to_sheet(arr); let wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Rincian HPP"); XLSX.writeFile(wb, `HPP_${dataExport.nama.replace(/\s+/g,'_')}.xlsx`);
+        function unduhExcelFormAktif() {
+            let data = extractDataFormAktif();
+            let ws = XLSX.utils.aoa_to_sheet([['Nama Resep', data.nama], ['HPP / Unit', Math.round(data.hpp)]]);
+            let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "HPP");
+            XLSX.writeFile(wb, `HPP_${data.nama}.xlsx`);
         }
-    }
 
-    // SEMUA FUNGSI UI BIASA TETAP ADA DI BAWAH INI SEPERTI:
-    // tambahBarisBahanBaku(), hitungOtomatis(), gantiTab(), dll...
-    // (Gunakan kode UI sebelumnya, tidak ada yang berubah untuk fungsi render HTML).
-</script>
+        // DATABASE ACTIONS (API FETCH)
+        async function simpanMasterManual(kategori) {
+            let payload = {};
+            if(kategori === 'bahanBaku') {
+                payload = { id: document.getElementById('editMasterIdBB').value, nama: document.getElementById('mNamaBB').value, harga: document.getElementById('mHargaBB').value, qty: document.getElementById('mQtyBB').value, satuan: document.getElementById('mSatuanBB').value };
+            } else if(kategori === 'bahanPenolong') {
+                payload = { id: document.getElementById('editMasterIdBP').value, nama: document.getElementById('mNamaBP').value, harga: document.getElementById('mHargaBP').value, qty: document.getElementById('mQtyBP').value, satuan: document.getElementById('mSatuanBP').value };
+            } else if(kategori === 'tenagaKerja') {
+                payload = { id: document.getElementById('editMasterIdTK').value, nama: document.getElementById('mNamaTK').value, gaji: document.getElementById('mGajiTK').value, jamHari: document.getElementById('mJamTK').value };
+            } else if(kategori === 'alat') {
+                payload = { id: document.getElementById('editMasterIdAlat').value, nama: document.getElementById('mNamaAlat').value, harga: document.getElementById('mHargaAlat').value, qty: document.getElementById('mQtyAlat').value, residu: document.getElementById('mResiduAlat').value, umur: document.getElementById('mUmurAlat').value };
+            } else if(kategori === 'overhead') {
+                payload = { id: document.getElementById('editMasterIdOH').value, nama: document.getElementById('mNamaOH').value, biaya: document.getElementById('mBiayaOH').value, qty: document.getElementById('mQtyOH').value };
+            }
+            let res = await fetchAPI('simpanKeMaster', { kategori: kategori, obj: payload });
+            if(res && res.success) { alert(res.message); resetFormMaster(kategori); ambilMasterDanInisialisasi(); }
+        }
+
+        function resetFormMaster(k) {
+            if(k==='bahanBaku') { document.getElementById('editMasterIdBB').value=''; document.getElementById('mNamaBB').value=''; document.getElementById('mHargaBB').value=''; }
+            else if(k==='bahanPenolong') { document.getElementById('editMasterIdBP').value=''; document.getElementById('mNamaBP').value=''; document.getElementById('mHargaBP').value=''; }
+            else if(k==='tenagaKerja') { document.getElementById('editMasterIdTK').value=''; document.getElementById('mNamaTK').value=''; document.getElementById('mGajiTK').value=''; }
+            else if(k==='alat') { document.getElementById('editMasterIdAlat').value=''; document.getElementById('mNamaAlat').value=''; document.getElementById('mHargaAlat').value=''; }
+            else if(k==='overhead') { document.getElementById('editMasterIdOH').value=''; document.getElementById('mNamaOH').value=''; document.getElementById('mBiayaOH').value=''; }
+        }
+
+        function renderTabelMasterDataKategori() {
+            ['BB', 'BP', 'TK', 'Alat', 'OH'].forEach(k => {
+                let keyMap = { BB: 'bahanBaku', BP: 'bahanPenolong', TK: 'tenagaKerja', Alat: 'alat', OH: 'overhead' };
+                let tbody = document.getElementById('tabelMaster' + k);
+                let list = masterData[keyMap[k]] || [];
+                let html = '';
+                list.forEach((item, idx) => {
+                    html += `<tr class="hover:bg-gray-50"><td class="p-3">${item.data[0]}</td><td class="p-3">Rp ${Number(item.data[1]).toLocaleString('id-ID')}</td><td class="p-3 text-center"><button onclick="editMasterItem('${keyMap[k]}', ${idx})" class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded">Edit</button> <button onclick="hapusMasterItem('${keyMap[k]}', '${item.id}')" class="bg-red-100 text-red-800 px-2 py-1 rounded">Hapus</button></td></tr>`;
+                });
+                tbody.innerHTML = html || `<tr><td colspan="5" class="p-3 text-center text-gray-400">Kosong</td></tr>`;
+            });
+        }
+
+        function editMasterItem(cat, idx) {
+            let item = masterData[cat][idx];
+            bukaMasterPanel('master-' + (cat==='bahanBaku'?'bb':cat==='bahanPenolong'?'bp':cat==='tenagaKerja'?'tk':cat==='alat'?'alat':'oh'));
+            if(cat==='bahanBaku') { document.getElementById('editMasterIdBB').value=item.id; document.getElementById('mNamaBB').value=item.data[0]; document.getElementById('mHargaBB').value=item.data[1]; }
+            else if(cat==='bahanPenolong') { document.getElementById('editMasterIdBP').value=item.id; document.getElementById('mNamaBP').value=item.data[0]; document.getElementById('mHargaBP').value=item.data[1]; }
+            else if(cat==='tenagaKerja') { document.getElementById('editMasterIdTK').value=item.id; document.getElementById('mNamaTK').value=item.data[0]; document.getElementById('mGajiTK').value=item.data[1]; }
+            else if(cat==='alat') { document.getElementById('editMasterIdAlat').value=item.id; document.getElementById('mNamaAlat').value=item.data[0]; document.getElementById('mHargaAlat').value=item.data[1]; }
+            else if(cat==='overhead') { document.getElementById('editMasterIdOH').value=item.id; document.getElementById('mNamaOH').value=item.data[0]; document.getElementById('mBiayaOH').value=item.data[1]; }
+        }
+
+        async function kirimData() {
+            let payload = {
+                id: document.getElementById('editResepId').value,
+                namaProduk: document.getElementById('namaProduk').value,
+                jumlahProduksi: Number(document.getElementById('jumlahProduksi').value),
+                hppPerUnit: cacheHitung.hppPerUnit,
+                hargaJualDasar: cacheHitung.hargaJualDasar,
+                targetMargin: Number(document.getElementById('targetMargin').value),
+                visibilitasStaff: document.getElementById('visibilitasStaff').value,
+                rincianJSON: "{}"
+            };
+            let res = await fetchAPI('simpanDanHitungData', payload);
+            if(res && res.success) { alert(res.message); gantiTab('daftar'); }
+        }
+
+        async function muatDaftarResep() {
+            let tbody = document.getElementById('tabelResepBody');
+            let data = await fetchAPI('ambilDaftarResep', { userRole: currentUserRole });
+            let html = '';
+            if(data) {
+                data.forEach(item => {
+                    html += `<tr><td class="p-3 font-semibold">${item.namaProduk}</td><td class="p-3">Rp ${Math.round(item.hppPerUnit).toLocaleString('id-ID')}</td><td class="p-3 text-center"><button onclick="bukaResepLengkap('${item.id}')" class="bg-blue-100 text-blue-800 px-2 py-1 rounded">Buka</button> <button onclick="hapusResep('${item.id}')" class="bg-red-100 text-red-800 px-2 py-1 rounded">Hapus</button></td><td class="p-3 text-center"><button onclick="unduhPDFDariList('${item.id}')" class="bg-red-600 text-white px-2 py-1 rounded">PDF</button> <button onclick="unduhExcelDariList('${item.id}')" class="bg-green-600 text-white px-2 py-1 rounded">Excel</button></td></tr>`;
+                });
+            }
+            tbody.innerHTML = html || `<tr><td colspan="5" class="p-3 text-center text-gray-400">Belum ada resep.</td></tr>`;
+        }
+
+        async function bukaResepLengkap(id) {
+            let item = await fetchAPI('ambilDetailResepById', { id: id });
+            if(item) {
+                gantiTab('form'); kosongkanForm();
+                document.getElementById('editResepId').value = item.id;
+                document.getElementById('namaProduk').value = item.namaProduk;
+                document.getElementById('jumlahProduksi').value = item.jumlahProduksi;
+                document.getElementById('targetMargin').value = item.targetMargin;
+                hitungOtomatis();
+            }
+        }
+
+        async function hapusResep(id) {
+            if(confirm('Hapus resep?')) { await fetchAPI('hapusResep', { id: id, userRole: currentUserRole }); muatDaftarResep(); }
+        }
+
+        async function hapusMasterItem(kat, id) {
+            if(confirm('Hapus master item?')) { await fetchAPI('hapusMasterItem', { kategori: kat, id: id, userRole: currentUserRole }); ambilMasterDanInisialisasi(); }
+        }
+
+        async function parseDataResepUntukExport(item) {
+            let json = JSON.parse(item.rincianJSON || '{}');
+            return { nama: item.namaProduk, batch: item.jumlahProduksi, hpp: item.hppPerUnit, hargaDasar: item.hargaJualDasar, rincian: [] };
+        }
+
+        async function unduhPDFDariList(id) {
+            let item = await fetchAPI('ambilDetailResepById', { id: id });
+            if(item) {
+                let d = await parseDataResepUntukExport(item);
+                let tpl = `<div style="padding:20px;"><h2>Resep: ${d.nama}</h2><p>HPP: Rp ${Math.round(d.hpp).toLocaleString('id-ID')}</p></div>`;
+                let opt = { margin: 0.5, filename: `HPP_${d.nama}.pdf`, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
+                let el = document.createElement('div'); el.innerHTML = tpl; html2pdf().set(opt).from(el).save();
+            }
+        }
+
+        async function unduhExcelDariList(id) {
+            let item = await fetchAPI('ambilDetailResepById', { id: id });
+            if(item) {
+                let d = await parseDataResepUntukExport(item);
+                let ws = XLSX.utils.aoa_to_sheet([['Nama Resep', d.nama], ['HPP / Unit', Math.round(d.hpp)]]);
+                let wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "HPP");
+                XLSX.writeFile(wb, `HPP_${d.nama}.xlsx`);
+            }
+        }
+
+        function initAplikasi() {
+            let u = localStorage.getItem('hpp_user'); let p = localStorage.getItem('hpp_pass');
+            if(u && p) { document.getElementById('loginUser').value = u; document.getElementById('loginPass').value = p; document.getElementById('rememberMe').checked = true; prosesLogin(); }
+        }
+    </script>
+</body>
+</html>
